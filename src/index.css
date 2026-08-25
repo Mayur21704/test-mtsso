@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Central Brand Colors (HSL tokens) */
+    --background: 0 0% 100%;
+    --foreground: 222 30% 15%;
+
+    --navy: 232 48% 34%;          /* #2d3580 */
+    --navy-dark: 226 58% 26%;     /* #1c2e6b */
+    --navy-foreground: 0 0% 100%;
+
+    --coral: 16 75% 52%;          /* #e05a2b */
+    --coral-light: 16 86% 60%;    /* #f07040 */
+    --coral-pale: 18 80% 96%;     /* #fdf0eb */
+    --coral-foreground: 0 0% 100%;
+
+    --warm-gray: 30 21% 96%;      /* #f7f4f1 */
+    --border: 220 14% 91%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-navy font-nunito;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-nunito text-navy;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-coral;
+  }
+
+  .eyebrow::before {
+    content: "";
+    @apply block h-px w-6 bg-coral;
+  }
+}

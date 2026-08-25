@@ -1,0 +1,103 @@
+import event1 from "@/assets/event1.jpeg";
+import event2 from "@/assets/event2.jpeg";
+import event3 from "@/assets/event3.jpeg";
+import event4 from "@/assets/event4.jpeg";
+import event5 from "@/assets/event5.webp";
+import volunteersImg from "@/assets/volunteers.jpg";
+import hamiltonImg from "@/assets/newimg/MS1A Different World, Just Beyond the Gangway.jpg";
+import shipDockImg from "@/assets/ship-dock.jpg";
+import waterImg from "@/assets/water1.jpg";
+
+export const STORIES = [
+  {
+    id: "women-maritime-2026",
+    slug: "women-in-maritime-leadership-luncheon",
+    title: "Women in Maritime Leadership Luncheon",
+    station: "toronto",
+    stationLabel: "Toronto Station",
+    category: "Events",
+    date: "May 20, 2026",
+    location: "Port of Toronto",
+    overview: "Join us as we celebrate the grand reopening of the Mission to Seafarers Toronto station alongside International Women in Maritime Day, highlighting female leaders across global shipping.",
+    image: event1,
+    featured: true,
+  },
+  {
+    id: "hamilton-sanctuary",
+    slug: "hamilton-station-sanctuary-beyond-gangway",
+    title: "A Sanctuary Just Beyond the Gangway in Hamilton",
+    station: "hamilton",
+    stationLabel: "Hamilton Station",
+    category: "Seafarer Stories",
+    date: "April 12, 2026",
+    location: "Port of Hamilton",
+    overview: "How our Hamilton seafarers centre provides a welcoming haven of rest, foosball, and quiet conversation for crews navigating Canada's largest Great Lakes industrial port.",
+    image: hamiltonImg,
+    featured: true,
+  },
+  {
+    id: "flag-raising-2026",
+    slug: "international-day-of-seafarer-flag-raising",
+    title: "International Day of the Seafarer Flag Raising Ceremony",
+    station: "mtsso",
+    stationLabel: "MTSSO Regional",
+    category: "Events",
+    date: "June 25, 2026",
+    location: "City Halls Across Southern Ontario",
+    overview: "Official ceremonies across Toronto, Hamilton, Oshawa, and Niagara to honour and recognize the unseen seafarers who move 90% of global everyday goods.",
+    image: event2,
+    featured: true,
+  },
+  {
+    id: "haircut-service-toronto",
+    slug: "new-haircut-service-visiting-seafarers",
+    title: "New Haircut & Wellness Service Welcomes Visiting Seafarers",
+    station: "toronto",
+    stationLabel: "Toronto Station",
+    category: "Services",
+    date: "Ongoing",
+    location: "Toronto Station",
+    overview: "A simple service that makes a profound difference after months at sea. Crews arriving at the Port of Toronto can now book professional haircut appointments right at the terminal.",
+    image: event5,
+    featured: false,
+  },
+  {
+    id: "oshawa-port-expansion",
+    slug: "oshawa-port-winter-visits",
+    title: "Supporting Great Lakes Crews at the Port of Oshawa",
+    station: "oshawa",
+    stationLabel: "Oshawa Station",
+    category: "Ship Visits",
+    date: "March 28, 2026",
+    location: "Port of Oshawa",
+    overview: "MTSSO mobile chaplaincy volunteers deliver warm knitted winter caps, fresh fruit, and essential SIM connectivity cards to freighters discharging bulk cargo.",
+    image: shipDockImg,
+    featured: false,
+  },
+  {
+    id: "port-colborne-canal-support",
+    slug: "port-colborne-welland-canal-transits",
+    title: "Meeting Vessels Along the Welland Canal at Lock 8",
+    station: "port-colborne",
+    stationLabel: "Port Colborne Station",
+    category: "Ship Visits",
+    date: "March 15, 2026",
+    location: "Port Colborne / Lake Erie Entrance",
+    overview: "As the 2026 navigation season opens, our canal outreach team rushes urgent packages and pastoral greetings to crews during brief lock delays.",
+    image: waterImg,
+    featured: false,
+  },
+  {
+    id: "volunteer-drive-regional",
+    slug: "southern-ontario-spring-volunteer-drive",
+    title: "Southern Ontario Network Launches Regional Volunteer Drive",
+    station: "mtsso",
+    stationLabel: "MTSSO Regional",
+    category: "Volunteers",
+    date: "May 1, 2026",
+    location: "Toronto • Hamilton • Oshawa • Port Colborne",
+    overview: "We are seeking ship visitors, volunteer van drivers, and hospitality coordinators to help welcome over 2,000 seafarers docking in Southern Ontario this year.",
+    image: volunteersImg,
+    featured: true,
+  },
+];
