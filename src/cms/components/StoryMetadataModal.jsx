@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Anchor, Tag, Image as ImageIcon, MapPin, User, CheckCircle2 } from "lucide-react";
+import { X, Anchor, Tag, Image as ImageIcon, User, CheckCircle2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
@@ -7,6 +7,7 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
     title: "",
     slug: "",
     station: "toronto",
+    stationName: "Toronto Station",
     category: "Station News",
     excerpt: "",
     featuredImage: "",
@@ -15,12 +16,33 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
     status: "published",
   });
 
+  const stations = [
+    { id: "toronto", name: "Toronto Station" },
+    { id: "hamilton", name: "Hamilton Station" },
+    { id: "oshawa", name: "Oshawa Station" },
+    { id: "port-colborne", name: "Port Colborne Station" },
+    { id: "mtsso", name: "MTSSO Regional" },
+    { id: "all", name: "All Stations" },
+  ];
+
+  const categories = [
+    "Ship Visits",
+    "Events",
+    "Station News",
+    "Stories",
+    "Volunteers",
+    "Community",
+    "Announcements",
+    "Maritime News",
+  ];
+
   useEffect(() => {
     if (metadata) {
       setFormData({
         title: metadata.title || "",
         slug: metadata.slug || "",
         station: metadata.station || "toronto",
+        stationName: metadata.stationName || "Toronto Station",
         category: metadata.category || "Station News",
         excerpt: metadata.excerpt || "",
         featuredImage: metadata.featuredImage || "",
@@ -29,211 +51,190 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
         status: metadata.status || "published",
       });
     }
-  }, [metadata, isOpen]);
+  }, [metadata]);
 
   if (!isOpen) return null;
 
-  const handleTitleChange = (e) => {
-    const title = e.target.value;
-    const autoSlug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
+  const stationLocations = {
+    toronto: "Port of Toronto",
+    hamilton: "Port of Hamilton",
+    oshawa: "Port of Oshawa",
+    "port-colborne": "Port Colborne",
+    mtsso: "Southern Ontario",
+    all: "All Regional Ports",
+  };
+
+  const handleStationChange = (stId) => {
+    const found = stations.find((s) => s.id === stId);
     setFormData((prev) => ({
       ...prev,
-      title,
-      slug: prev.slug && prev.slug !== autoSlug ? prev.slug : autoSlug,
+      station: stId,
+      stationName: found ? found.name : "MTSSO Regional",
+      location: stationLocations[stId] || "Southern Ontario",
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
     onSave(formData);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 text-slate-900">
-        {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-coral-pale text-coral rounded-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-navy/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+      {/* ─── SEAMLESS 100% PURE WHITE MODAL ─── */}
+      <div className="bg-white border border-slate-200/90 rounded-[28px] w-full max-w-xl shadow-2xl text-slate-900 flex flex-col max-h-[92vh] overflow-hidden">
+        
+        {/* Header */}
+        <div className="px-6 sm:px-8 pt-6 sm:pt-7 pb-4 flex items-start justify-between gap-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-coral-pale flex items-center justify-center text-coral shadow-xs shrink-0">
               <Anchor className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-navy">Story Settings & Station Tagging</h2>
-              <p className="text-xs text-slate-500">Configure which station and category this story publishes to.</p>
+              <h2 className="text-lg font-black text-navy leading-tight">
+                Story Settings & Tagging
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Assign this story to stations and configure metadata
+              </p>
             </div>
           </div>
+          
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-navy hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Title */}
-          <div>
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5">
-              Story Title <span className="text-coral">*</span>
+        {/* Modal Form Body */}
+        <form onSubmit={handleSave} className="p-6 sm:p-8 space-y-4.5 overflow-y-auto custom-scrollbar">
+          
+          {/* Target Station Selector */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+              <Anchor className="w-3.5 h-3.5 text-coral" /> Target Station
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {stations.map((st) => (
+                <button
+                  type="button"
+                  key={st.id}
+                  onClick={() => handleStationChange(st.id)}
+                  className={`p-3 rounded-xl text-xs font-bold border transition-all text-left flex items-center justify-between cursor-pointer ${
+                    formData.station === st.id
+                      ? "bg-coral text-white border-coral shadow-xs font-black"
+                      : "bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="truncate">{st.name}</span>
+                  {formData.station === st.id && (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 ml-1 text-white" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Dropdown (Consistent h-11 Height & Custom Arrow) */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-coral" /> Category
+            </label>
+            <div className="relative">
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all appearance-none cursor-pointer pr-10 shadow-xs"
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c} className="text-navy bg-white py-1 font-bold">
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Story Title */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-black text-navy uppercase tracking-wider">
+              Headline Title
             </label>
             <input
               type="text"
               required
               value={formData.title}
-              onChange={handleTitleChange}
-              placeholder="e.g. Seafarers Celebrate Grand Reopening at Port of Toronto"
-              className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
+              placeholder="e.g. Seafarers Celebrate Port Reopening in Toronto"
             />
           </div>
 
-          {/* Station & Category Selector */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            {/* Station Target */}
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
-                <Anchor className="w-3.5 h-3.5 text-coral" /> Target Station <span className="text-coral">*</span>
-              </label>
-              <select
-                value={formData.station}
-                onChange={(e) => {
-                  const st = e.target.value;
-                  let defaultLoc = "Southern Ontario";
-                  if (st === "toronto") defaultLoc = "Port of Toronto";
-                  if (st === "hamilton") defaultLoc = "Port of Hamilton";
-                  if (st === "oshawa") defaultLoc = "Port of Oshawa";
-                  if (st === "port-colborne") defaultLoc = "Port Colborne & Lock 8";
-                  setFormData((prev) => ({ ...prev, station: st, location: defaultLoc }));
-                }}
-                className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-coral"
-              >
-                <option value="toronto">Toronto Station</option>
-                <option value="hamilton">Hamilton Station</option>
-                <option value="oshawa">Oshawa Station</option>
-                <option value="port-colborne">Port Colborne Station</option>
-                <option value="mtsso">MTSSO Umbrella (Regional)</option>
-                <option value="all">All Stations (Network Wide)</option>
-              </select>
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-coral" /> Category <span className="text-coral">*</span>
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-coral"
-              >
-                <option value="Ship Visits">Ship Visits</option>
-                <option value="Events">Events</option>
-                <option value="Station News">Station News</option>
-                <option value="Stories">Stories & Crew Testimonies</option>
-                <option value="Volunteers">Volunteers</option>
-                <option value="Community">Community Partnerships</option>
-                <option value="Announcements">Announcements</option>
-                <option value="Maritime News">Maritime News</option>
-              </select>
-            </div>
-          </div>
-
           {/* Excerpt / Summary */}
-          <div>
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5">
-              Short Summary / Excerpt
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-black text-navy uppercase tracking-wider">
+              News Card Excerpt / Summary
             </label>
             <textarea
               rows={2}
               value={formData.excerpt}
-              onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
-              placeholder="A short 1-2 sentence preview that appears on the newsfeed cards."
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
+              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+              className="w-full bg-slate-50/70 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium text-navy placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all resize-none leading-relaxed shadow-xs"
+              placeholder="A brief 1-2 sentence preview for the central newsroom card..."
             />
           </div>
 
-          {/* Featured Image URL */}
-          <div>
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-coral" /> Featured Header Image URL / Asset
-            </label>
-            <input
-              type="text"
-              value={formData.featuredImage}
-              onChange={(e) => setFormData((prev) => ({ ...prev, featuredImage: e.target.value }))}
-              placeholder="https://images.unsplash.com/... or /src/assets/event1.jpeg"
-              className="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
-            />
-          </div>
+          {/* Featured Image & Author */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-coral" /> Featured Thumbnail URL
+              </label>
+              <input
+                type="text"
+                value={formData.featuredImage}
+                onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
+                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-medium text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
+                placeholder="https://... or /uploads/image.jpg"
+              />
+            </div>
 
-          {/* Author & Location */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-coral" /> Author / Reporter
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-sky-600" /> Author / Reporter
               </label>
               <input
                 type="text"
                 value={formData.author}
-                onChange={(e) => setFormData((prev) => ({ ...prev, author: e.target.value }))}
-                className="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-coral" /> Port Location
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
-                className="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
+                placeholder="e.g. Chaplain Dan Phannenhour"
               />
             </div>
           </div>
 
-          {/* Publication Status & Slug */}
-          <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5">
-                Publish Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3.5 py-2 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-coral"
-              >
-                <option value="published">🚀 Published (Visible on Website)</option>
-                <option value="draft">📝 Draft (Admin Only)</option>
-                <option value="archived">📦 Archived</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5">
-                URL Slug
-              </label>
-              <input
-                type="text"
-                value={formData.slug}
-                onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                placeholder="auto-generated-slug"
-                className="w-full px-4 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
-              />
-            </div>
-          </div>
-
-          {/* Modal Actions */}
+          {/* Modal Footer */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <Button type="button" variant="outline" onClick={onClose} className="border-slate-200">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold px-4 h-10 rounded-xl cursor-pointer"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-coral hover:bg-coral-light text-white font-bold px-6 shadow-warm">
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Save Story Settings
+            <Button
+              type="submit"
+              size="sm"
+              className="bg-coral hover:bg-coral-light text-white text-xs font-black px-6 h-10 rounded-xl shadow-warm cursor-pointer"
+            >
+              Save Story Settings
             </Button>
           </div>
         </form>

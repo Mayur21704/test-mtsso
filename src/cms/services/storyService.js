@@ -1,5 +1,3 @@
-import { STORIES as SEED_STORIES } from "@/data/newsData";
-
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api/stories";
 const LOCAL_STORAGE_KEY = "mtsso_stories_cms_cache";
 
@@ -15,34 +13,7 @@ const getLocalStories = () => {
   } catch (e) {
     console.warn("Could not read local storage stories", e);
   }
-  
-  // Transform initial seed stories
-  const formatted = SEED_STORIES.map((s, idx) => ({
-    id: idx + 1,
-    title: s.title,
-    slug: s.slug || `story-${idx + 1}`,
-    station: s.station || "mtsso",
-    stationName: s.stationName || "MTSSO Regional",
-    category: s.category || "Station News",
-    excerpt: s.overview || "",
-    featuredImage: s.image || "",
-    location: s.location || "Southern Ontario",
-    author: s.author || "MTSSO Editorial Team",
-    htmlContent: `<div style="max-width: 800px; margin: 0 auto; font-family: 'Nunito', sans-serif; color: #2d3580; line-height: 1.7;">
-      <h1 style="color: #2d3580; font-size: 2.2rem; font-weight: 800;">${s.title}</h1>
-      <p style="color: #e05a2b; font-weight: bold; font-size: 1.1rem;">${s.stationName} · ${s.category}</p>
-      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;" />
-      <p>${s.overview}</p>
-    </div>`,
-    cssContent: "",
-    projectData: {},
-    status: "published",
-    publishedAt: s.date || new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  }));
-
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formatted));
-  return formatted;
+  return [];
 };
 
 /**
@@ -58,7 +29,7 @@ const saveLocalStories = (stories) => {
 
 export const storyService = {
   /**
-   * Fetch all stories with optional filters
+   * Fetch all stories with optional filters (station, category, status, search)
    */
   async getStories(params = {}) {
     const query = new URLSearchParams();
@@ -69,11 +40,12 @@ export const storyService = {
 
     try {
       const res = await fetch(`${API_BASE}?${query.toString()}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        saveLocalStories(json.data);
-        return json.data;
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          saveLocalStories(json.data);
+          return json.data;
+        }
       }
     } catch (err) {
       console.info("[storyService] Using local fallback store:", err.message);
@@ -109,9 +81,10 @@ export const storyService = {
   async getStoryBySlug(slug) {
     try {
       const res = await fetch(`${API_BASE}/slug/${slug}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.success && json.data) return json.data;
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) return json.data;
+      }
     } catch (err) {
       console.info("[storyService] Using local fallback for slug:", slug);
     }
@@ -126,9 +99,10 @@ export const storyService = {
   async getStoryById(id) {
     try {
       const res = await fetch(`${API_BASE}/${id}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.success && json.data) return json.data;
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) return json.data;
+      }
     } catch (err) {
       console.info("[storyService] Using local fallback for ID:", id);
     }

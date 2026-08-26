@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Plus, Edit, Trash2, ExternalLink, Filter, Search,
-  Anchor, Newspaper, RefreshCw, FileText, CheckCircle2, Eye
+  Plus, Edit, Trash2, Search, Anchor, Newspaper,
+  RefreshCw, FileText, CheckCircle2, Eye, Calendar, ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { storyService } from "../services/storyService";
+import { formatStoryDate } from "../utils/storyHelpers";
+import { CmsNotification } from "../components/CmsNotification";
+import { CmsConfirmModal } from "../components/CmsConfirmModal";
 import logo from "@/assets/logo.jpeg";
 
 export const AdminDashboard = () => {
@@ -15,6 +18,19 @@ export const AdminDashboard = () => {
   const [selectedStation, setSelectedStation] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Confirmation modal & toast state
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, title }
+  const [toast, setToast] = useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
+
+  const showToast = (type, title, message) => {
+    setToast({ isOpen: true, type, title, message });
+  };
+
   const fetchStories = async () => {
     setLoading(true);
     try {
@@ -22,9 +38,10 @@ export const AdminDashboard = () => {
         station: selectedStation,
         search: searchQuery,
       });
-      setStories(data);
+      setStories(data || []);
     } catch (err) {
       console.error("Failed to load stories", err);
+      showToast("error", "Error Loading", "Failed to retrieve stories from the server.");
     } finally {
       setLoading(false);
     }
@@ -34,89 +51,98 @@ export const AdminDashboard = () => {
     fetchStories();
   }, [selectedStation, searchQuery]);
 
-  const handleDelete = async (id, title) => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
-      await storyService.deleteStory(id);
+  const confirmDeleteStory = async () => {
+    if (!deleteTarget) return;
+    try {
+      await storyService.deleteStory(deleteTarget.id);
+      showToast("info", "Story Deleted", `"${deleteTarget.title}" has been deleted.`);
       fetchStories();
+    } catch (err) {
+      showToast("error", "Delete Failed", err.message || "Could not delete story.");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
   const stationBadges = {
-    toronto: { name: "Toronto", bg: "bg-blue-50 text-blue-700 border-blue-200" },
-    hamilton: { name: "Hamilton", bg: "bg-amber-50 text-amber-700 border-amber-200" },
-    oshawa: { name: "Oshawa", bg: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    "port-colborne": { name: "Port Colborne", bg: "bg-purple-50 text-purple-700 border-purple-200" },
+    toronto: { name: "Toronto", bg: "bg-blue-50 text-blue-800 border-blue-200" },
+    hamilton: { name: "Hamilton", bg: "bg-amber-50 text-amber-800 border-amber-200" },
+    oshawa: { name: "Oshawa", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+    "port-colborne": { name: "Port Colborne", bg: "bg-purple-50 text-purple-800 border-purple-200" },
     mtsso: { name: "MTSSO Regional", bg: "bg-coral-pale text-coral border-coral/20" },
-    all: { name: "All Stations", bg: "bg-slate-100 text-slate-700 border-slate-200" },
+    all: { name: "All Stations", bg: "bg-slate-100 text-slate-800 border-slate-200" },
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* ─── TOP HEADER ─── */}
-      <header className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="MTSSO" className="h-10 w-auto rounded-md" />
-          <div>
-            <h1 className="text-base sm:text-lg font-extrabold text-white leading-none">
-              MTSSO Story & News CMS Studio
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Visual Page Builder (GrapesJS) & Central Content Manager
-            </p>
+      <header className="bg-navy text-white px-4 sm:px-6 py-3.5 sm:py-4 sticky top-0 z-30 shadow-md border-b border-navy-dark">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <img src={logo} alt="MTSSO" className="h-9 sm:h-10 w-auto rounded-md bg-white p-0.5 shrink-0" />
+            <div>
+              <h1 className="text-sm sm:text-base md:text-lg font-extrabold text-white leading-tight">
+                MTSSO Story Studio
+              </h1>
+              <p className="text-[10px] sm:text-xs text-white/70 hidden xs:block">
+                Visual GrapesJS Builder & Station Content Manager
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            to="/"
-            className="text-xs font-bold text-slate-400 hover:text-white px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors"
-          >
-            ← View Main Website
-          </Link>
-          <Button
-            asChild
-            className="bg-coral hover:bg-coral-light text-white font-extrabold text-xs px-4 shadow-warm"
-          >
-            <Link to="/admin/stories/new">
-              <Plus className="w-4 h-4 mr-1.5" /> Create New Story
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Link
+              to="/"
+              className="text-xs font-bold text-white/80 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition-colors hidden sm:inline-flex items-center gap-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Website
             </Link>
-          </Button>
+            <Button
+              asChild
+              className="bg-coral hover:bg-coral-light text-white font-extrabold text-xs px-3 sm:px-4 h-9 sm:h-10 shadow-warm"
+            >
+              <Link to="/admin/stories/new">
+                <Plus className="w-4 h-4 mr-1" /> New Story
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        
         {/* Banner Card */}
-        <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-navy-dark p-6 rounded-3xl border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-coral bg-coral-pale/10 px-3 py-1 rounded-full border border-coral/20">
-              <Newspaper className="w-3.5 h-3.5" /> Central Content Distribution
+        <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase text-coral bg-coral-pale px-3 py-0.5 rounded-full border border-coral/20">
+              <Newspaper className="w-3 h-3" /> Station Dispatches & Articles
             </div>
-            <h2 className="text-2xl font-extrabold text-white">
-              Station Story Management
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-navy">
+              Published Stories & Newsletters
             </h2>
-            <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
-              Create and visually design blog posts, ship visiting dispatches, and event announcements. 
-              Assign stories to specific port stations (<strong>Toronto</strong>, <strong>Hamilton</strong>, <strong>Oshawa</strong>, <strong>Port Colborne</strong>) or publish network-wide across the MTSSO umbrella.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl leading-relaxed">
+              Design pages with drag-and-drop maritime components. Stories publish live to Toronto, Hamilton, Oshawa, and Port Colborne stations.
             </p>
           </div>
 
           <Button
             asChild
             size="lg"
-            className="bg-coral hover:bg-coral-light text-white font-extrabold text-sm px-6 shadow-warm shrink-0"
+            className="bg-coral hover:bg-coral-light text-white font-extrabold text-xs sm:text-sm px-5 h-11 shadow-warm shrink-0 w-full sm:w-auto cursor-pointer"
           >
             <Link to="/admin/stories/new">
-              <Plus className="w-5 h-5 mr-2" /> Design New Story
+              <Plus className="w-4 h-4 mr-1.5" /> Design New Story
             </Link>
           </Button>
         </div>
 
         {/* ─── FILTERS & SEARCH BAR ─── */}
-        <div className="bg-slate-950 p-4 sm:p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Station Filter Tabs */}
-          <div className="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
-            <span className="text-xs font-extrabold uppercase text-slate-400 mr-2">Filter Station:</span>
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          
+          {/* Station Filter Tabs (Smooth horizontal touch scroll on mobile) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <span className="text-[11px] font-extrabold uppercase text-slate-400 mr-1 shrink-0">Filter:</span>
             {[
               { id: "all", label: "All Stations" },
               { id: "toronto", label: "Toronto" },
@@ -127,11 +153,12 @@ export const AdminDashboard = () => {
             ].map((st) => (
               <button
                 key={st.id}
+                type="button"
                 onClick={() => setSelectedStation(st.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                   selectedStation === st.id
-                    ? "bg-coral text-white shadow-xs"
-                    : "bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                    ? "bg-navy text-white shadow-xs font-extrabold"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
                 {st.label}
@@ -140,131 +167,148 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Search Box */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full md:w-64 shrink-0">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search story title or keyword..."
+              placeholder="Search by title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-900 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-coral"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-navy placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-coral transition-colors"
             />
           </div>
         </div>
 
-        {/* ─── STORIES TABLE ─── */}
-        <div className="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
-          {loading ? (
-            <div className="text-center py-20 text-slate-400 space-y-3">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-coral" />
-              <p className="text-xs font-bold uppercase tracking-wider">Loading Stories...</p>
-            </div>
-          ) : stories.length === 0 ? (
-            <div className="text-center py-20 text-slate-400 space-y-4">
-              <FileText className="w-10 h-10 mx-auto text-slate-600" />
-              <p className="text-base font-bold text-slate-300">No stories found matching your filter.</p>
-              <Button asChild size="sm" className="bg-coral text-white font-bold text-xs">
-                <Link to="/admin/stories/new">Create Your First Story</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-400 uppercase text-[10px] font-extrabold tracking-wider border-b border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-6">Story Title & Excerpt</th>
-                    <th className="py-3.5 px-4">Station</th>
-                    <th className="py-3.5 px-4">Category</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4">Date</th>
-                    <th className="py-3.5 px-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {stories.map((story) => {
-                    const badge = stationBadges[story.station] || stationBadges.mtsso;
-                    return (
-                      <tr key={story.id} className="hover:bg-slate-900/60 transition-colors">
-                        <td className="py-4 px-6 max-w-sm">
-                          <div className="font-extrabold text-white text-sm line-clamp-1 mb-1">
-                            {story.title}
-                          </div>
-                          <p className="text-slate-400 text-xs line-clamp-1">
-                            {story.excerpt || "No excerpt provided."}
-                          </p>
-                        </td>
+        {/* ─── STORIES LIST (DUAL VIEW: CARDS ON MOBILE, TABLE ON DESKTOP) ─── */}
+        {loading ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-6 space-y-2.5 shadow-xs">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-coral" />
+            <p className="text-xs font-extrabold uppercase tracking-wider text-navy">Loading Stories...</p>
+          </div>
+        ) : stories.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-6 space-y-3 shadow-xs">
+            <FileText className="w-10 h-10 mx-auto text-slate-300" />
+            <p className="text-sm font-extrabold text-navy">No stories found matching your filter.</p>
+            <Button asChild size="sm" className="bg-coral text-white font-extrabold text-xs">
+              <Link to="/admin/stories/new">Create Your First Story</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+              <div className="overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left text-xs min-w-[700px]">
+                  <thead className="bg-slate-50 text-navy uppercase text-[10px] font-extrabold tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="py-3.5 px-6">Story Title & Excerpt</th>
+                      <th className="py-3.5 px-4">Station</th>
+                      <th className="py-3.5 px-4">Category</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4">Date</th>
+                      <th className="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {stories.map((story) => {
+                      const badge = stationBadges[story.station] || stationBadges.mtsso;
+                      return (
+                        <tr key={story.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-4 px-6 max-w-sm">
+                            <div className="font-extrabold text-navy text-sm line-clamp-1 mb-1">
+                              {story.title}
+                            </div>
+                            <p className="text-slate-500 text-xs line-clamp-1">
+                              {story.excerpt || "No excerpt provided."}
+                            </p>
+                          </td>
 
-                        <td className="py-4 px-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${badge.bg}`}
-                          >
-                            <Anchor className="w-3 h-3" />
-                            {badge.name}
-                          </span>
-                        </td>
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${badge.bg}`}
+                            >
+                              <Anchor className="w-3 h-3" />
+                              {badge.name}
+                            </span>
+                          </td>
 
-                        <td className="py-4 px-4 whitespace-nowrap">
-                          <span className="text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-[11px] font-bold">
-                            {story.category || "Station News"}
-                          </span>
-                        </td>
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span className="text-navy bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-bold">
+                              {story.category || "Station News"}
+                            </span>
+                          </td>
 
-                        <td className="py-4 px-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
-                              story.status === "published"
-                                ? "bg-emerald-950 text-emerald-400 border border-emerald-800/40"
-                                : "bg-amber-950 text-amber-400 border border-amber-800/40"
-                            }`}
-                          >
-                            {story.status === "published" ? "🟢 Published" : "📝 Draft"}
-                          </span>
-                        </td>
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                                story.status === "published"
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                  : "bg-amber-50 text-amber-800 border border-amber-200"
+                              }`}
+                            >
+                              {story.status === "published" ? "🟢 Published" : "📝 Draft"}
+                            </span>
+                          </td>
 
-                        <td className="py-4 px-4 whitespace-nowrap text-slate-400 text-[11px]">
-                          {new Date(story.publishedAt || story.createdAt).toLocaleDateString()}
-                        </td>
+                          <td className="py-4 px-4 whitespace-nowrap text-slate-500 text-[11px]">
+                            {formatStoryDate(story.publishedAt || story.createdAt)}
+                          </td>
 
-                        <td className="py-4 px-6 text-right whitespace-nowrap space-x-2">
-                          {/* Live view button */}
-                          <Link
-                            to={`/news/${story.slug}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-colors"
-                            title="View on Website"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </Link>
-
-                          {/* Edit Visual Builder Button */}
-                          <Button
-                            asChild
-                            size="sm"
-                            className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 shadow-xs"
-                          >
-                            <Link to={`/admin/stories/edit/${story.id}`}>
-                              <Edit className="w-3.5 h-3.5 mr-1" /> Edit Builder
+                          <td className="py-4 px-6 text-right whitespace-nowrap space-x-2">
+                            <Link
+                              to={`/news/${story.slug}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-navy rounded-lg text-xs font-bold transition-colors"
+                              title="View on Website"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
                             </Link>
-                          </Button>
 
-                          {/* Delete Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(story.id, story.title)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors"
-                            title="Delete Story"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                            <Button
+                              asChild
+                              size="sm"
+                              className="bg-navy hover:bg-navy-light text-white text-xs font-bold px-3 shadow-xs"
+                            >
+                              <Link to={`/admin/stories/edit/${story.id}`}>
+                                <Edit className="w-3.5 h-3.5 mr-1" /> Edit Builder
+                              </Link>
+                            </Button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget({ id: story.id, title: story.title })}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Delete Story"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          )}
-        </div>
+        )}
       </main>
+
+      {/* ─── CONFIRM DELETE MODAL ─── */}
+      <CmsConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDeleteStory}
+        title="Delete Story?"
+        message={deleteTarget ? `Are you sure you want to permanently delete "${deleteTarget.title}"?` : ""}
+        confirmLabel="Delete Story"
+        isDestructive={true}
+      />
+
+      {/* ─── SMALL BRAND TOAST NOTIFICATION ─── */}
+      <CmsNotification
+        isOpen={toast.isOpen}
+        onClose={() => setToast((prev) => ({ ...prev, isOpen: false }))}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+      />
     </div>
   );
 };

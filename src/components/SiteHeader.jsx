@@ -43,7 +43,7 @@ export const SiteHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 1. MAIN MTSSO UMBRELLA NAVIGATION (Clean 3 items per DOC.md)
+  // 1. MAIN MTSSO UMBRELLA NAVIGATION (Includes News & Stories)
   const mainUmbrellaNav = [
     { to: "/", label: "Home", exact: true },
     { to: "/about-mtsso", label: "About MTSSO" },
@@ -58,9 +58,10 @@ export const SiteHeader = () => {
         { to: "/stations/port-colborne", label: "Port Colborne (Welland Canal)" },
       ],
     },
+    { to: "/news", label: "News & Stories" },
   ];
 
-  // 2. INDIVIDUAL STATION SPECIFIC NAVIGATION (Full 7 items)
+  // 2. INDIVIDUAL STATION SPECIFIC NAVIGATION
   const individualStationNav = currentStation ? [
     { to: `/stations/${currentStation.id}`, label: "Home", exact: true },
     {
