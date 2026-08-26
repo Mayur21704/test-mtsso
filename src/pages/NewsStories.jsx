@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { STORIES } from "@/data/newsData";
-import { STATIONS } from "@/data/stationsData";
 import { Calendar, MapPin, Tag, ChevronRight, ArrowRight } from "lucide-react";
 
 export const NewsStories = () => {

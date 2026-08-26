@@ -1,4 +1,4 @@
-// Image imports from local assets
+// Image imports from local assets for MTSSO Umbrella level pages
 import torontoThumb from "@/assets/toronto_card.jpeg";
 import hamiltonThumb from "@/assets/newimg/MS1A Different World, Just Beyond the Gangway.jpg";
 import oshawaThumb from "@/assets/ship-dock.jpg";
@@ -12,8 +12,6 @@ export const STATIONS = {
     id: "toronto",
     name: "Mission to Seafarers Toronto",
     shortName: "Toronto Station",
-    slug: "toronto",
-    tagline: "Welcoming seafarers at the Port of Toronto with hospitality, practical support, and a place to belong.",
     portName: "Port of Toronto (Terminals 51 & 52)",
     coordinates: "43.6487° N, 79.3512° W",
     address: "8 Unwin Avenue, Port of Toronto, ON, M5A 1A1",
@@ -30,7 +28,6 @@ export const STATIONS = {
     portDetails: {
       annualVessels: "180+ Commercial Ships & Cruise Liners",
       cargoTypes: ["Sugar & Agricultural Bulk", "Steel & Project Cargo", "Salt & Aggregates", "Passenger Ships"],
-      waterway: "Lake Ontario / St. Lawrence Seaway",
       description: "Toronto is an essential international commercial gateway on Lake Ontario, connecting Ontario industries directly with global overseas trade.",
     },
     services: [
@@ -45,12 +42,10 @@ export const STATIONS = {
       {
         title: "Seafarer Parcel Pickup",
         description: "Secure delivery address for online orders of essential goods, electronics, and supplies.",
-        badge: "Popular",
       },
       {
         title: "Haircuts for Seafarers",
         description: "Professional haircut and wellness appointments arranged in advance for crew stepping ashore.",
-        badge: "Bookable",
       },
       {
         title: "Transportation & Shopping Runs",
@@ -63,16 +58,12 @@ export const STATIONS = {
     ],
     hours: "Coordinated around vessel port schedules; on-call 7 days a week during navigation season.",
     parcelDeliveryAddress: "c/o Mission to Seafarers Toronto, 8 Unwin Ave, Toronto, ON M5A 1A1",
-    facilities: ["High-speed Wi-Fi", "Lounge & Kitchenette", "Quiet Chapel Space", "Haircut Chair", "Snack Bar"],
-    historyHighlight: "Serving seafarers at the Port of Toronto since 1961. Reopening a state-of-the-art new station space with the support of PortsToronto.",
   },
 
   hamilton: {
     id: "hamilton",
     name: "Mission to Seafarers Hamilton",
     shortName: "Hamilton Station",
-    slug: "hamilton",
-    tagline: "A sanctuary of rest, friendship, and human connection just beyond the gangway at Canada's largest Great Lakes port.",
     portName: "Port of Hamilton (HOPA Ports / Hamilton Harbour)",
     coordinates: "43.2725° N, 79.8456° W",
     address: "650 Catharine St N, Hamilton, ON, L8L 4V7",
@@ -89,7 +80,6 @@ export const STATIONS = {
     portDetails: {
       annualVessels: "600+ Domestic & International Vessels",
       cargoTypes: ["Steel & Iron Ore", "Agricultural Grains", "Fertilizer & Liquid Bulk", "Salt & Coal"],
-      waterway: "Hamilton Harbour / Lake Ontario / Welland Canal link",
       description: "As the largest cargo port on the Canadian Great Lakes, Hamilton handles over 10 million tonnes of raw materials and finished goods annually.",
     },
     services: [
@@ -116,16 +106,12 @@ export const STATIONS = {
     ],
     hours: "Daily during active port operations; Chaplain on-call 24/7 for vessel emergencies.",
     parcelDeliveryAddress: "c/o Mission to Seafarers Hamilton, 650 Catharine St N, Hamilton, ON L8L 4V7",
-    facilities: ["Recreation Lounge (Pool/Foosball)", "Free Wi-Fi", "Quiet Chapel", "Kitchen & Coffee Bar", "Van Shuttle"],
-    historyHighlight: "A steadfast pillar of Hamilton's working waterfront for decades, maintaining deep relationships with terminal operators and port workers.",
   },
 
   oshawa: {
     id: "oshawa",
     name: "Mission to Seafarers Oshawa",
     shortName: "Oshawa Station",
-    slug: "oshawa",
-    tagline: "Vital welfare outreach and practical assistance for vessels docking in Durham Region's key commercial port.",
     portName: "Port of Oshawa (HOPA Ports / Durham Waterfront)",
     coordinates: "43.8682° N, 78.8252° W",
     address: "1050 Farewell St, Oshawa, ON, L1H 6N6",
@@ -142,7 +128,6 @@ export const STATIONS = {
     portDetails: {
       annualVessels: "80+ Ocean & Great Lakes Freighters",
       cargoTypes: ["Steel & Metal Products", "Grain & Agricultural Exports", "Salt & Asphalt"],
-      waterway: "Eastern Lake Ontario",
       description: "Oshawa's modern deep-water port plays a crucial role in supplying the manufacturing heartland of Durham Region and the GTA.",
     },
     services: [
@@ -165,16 +150,12 @@ export const STATIONS = {
     ],
     hours: "Coordinated based on vessel arrivals and port call schedules.",
     parcelDeliveryAddress: "c/o Mission to Seafarers Oshawa, 1050 Farewell St, Oshawa, ON L1H 6N6",
-    facilities: ["Mobile Chaplaincy Van", "Portable Wi-Fi Hotspots", "Care Package Hub"],
-    historyHighlight: "Serving the growing industrial waterfront of Oshawa as part of the unified Southern Ontario regional network.",
   },
 
   "port-colborne": {
     id: "port-colborne",
     name: "Mission to Seafarers Port Colborne",
     shortName: "Port Colborne Station",
-    slug: "port-colborne",
-    tagline: "Guardian of the Welland Canal — meeting transit crews at the vital southern gateway to Lake Erie.",
     portName: "Port Colborne & Welland Canal Locks",
     coordinates: "42.8842° N, 79.2514° W",
     address: "West Pier / Welland Canal Transit Point, Port Colborne, ON",
@@ -191,7 +172,6 @@ export const STATIONS = {
     portDetails: {
       annualVessels: "3,000+ Canal Transits & Port Dwell Calls",
       cargoTypes: ["Grain Milling & Agri-Bulk", "Ship Repair & Layup", "Aggregates & General Cargo"],
-      waterway: "Welland Canal (Lock 8) & Lake Erie",
       description: "Port Colborne represents the southern gateway of the St. Lawrence Seaway, connecting Lake Ontario with Lake Erie and the upper Great Lakes.",
     },
     services: [
@@ -214,7 +194,5 @@ export const STATIONS = {
     ],
     hours: "Seasonal canal operational schedule (March–December) and winter layup care.",
     parcelDeliveryAddress: "c/o Mission to Seafarers Port Colborne, Port Colborne, ON L3K 5V7",
-    facilities: ["Canal Mobile Support Unit", "Emergency Care Dispatch"],
-    historyHighlight: "Serving seafarers navigating the historic 8-lock Welland Canal for over a century of maritime heritage.",
   },
 };
