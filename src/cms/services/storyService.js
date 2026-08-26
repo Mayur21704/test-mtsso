@@ -2,6 +2,31 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api/stor
 const LOCAL_STORAGE_KEY = "mtsso_stories_cms_cache";
 
 /**
+ * Helper to get Auth Headers
+ */
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("mtsso_admin_token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+/**
+ * Intercept 401 response and redirect to login if session expired
+ */
+const handleAuthError = (res) => {
+  if (res.status === 401) {
+    localStorage.removeItem("mtsso_admin_token");
+    localStorage.removeItem("mtsso_admin_user");
+    if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
+      const redirect = encodeURIComponent(window.location.pathname);
+      window.location.href = `/admin/login?expired=1&redirect=${redirect}`;
+    }
+  }
+};
+
+/**
  * Helper to get local cached stories fallback
  */
 const getLocalStories = () => {
@@ -76,7 +101,7 @@ export const storyService = {
   },
 
   /**
-   * Get single story by slug
+   * Get single story by slug (Public reader)
    */
   async getStoryBySlug(slug) {
     try {
@@ -94,11 +119,14 @@ export const storyService = {
   },
 
   /**
-   * Get single story by ID (for admin editing)
+   * Get single story by ID (Protected for admin editing)
    */
   async getStoryById(id) {
     try {
-      const res = await fetch(`${API_BASE}/${id}`);
+      const res = await fetch(`${API_BASE}/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      handleAuthError(res);
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) return json.data;
@@ -112,15 +140,16 @@ export const storyService = {
   },
 
   /**
-   * Create a new story
+   * Create a new story (Protected)
    */
   async createStory(storyData) {
     try {
       const res = await fetch(API_BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(storyData),
       });
+      handleAuthError(res);
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -148,15 +177,16 @@ export const storyService = {
   },
 
   /**
-   * Update an existing story
+   * Update an existing story (Protected)
    */
   async updateStory(id, storyData) {
     try {
       const res = await fetch(`${API_BASE}/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(storyData),
       });
+      handleAuthError(res);
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -179,11 +209,15 @@ export const storyService = {
   },
 
   /**
-   * Delete a story
+   * Delete a story (Protected)
    */
   async deleteStory(id) {
     try {
-      await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+      handleAuthError(res);
     } catch (err) {
       console.info("[storyService] Deleting story in local storage fallback:", err.message);
     }

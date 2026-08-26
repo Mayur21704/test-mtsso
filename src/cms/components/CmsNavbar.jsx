@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Save, Send, Settings, Anchor,
   Monitor, Tablet, Smartphone, RotateCcw, RotateCw,
-  Image as ImageIcon, Eye
+  Image as ImageIcon, Eye, LogOut, UserCheck
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
+import { useAuth } from "../context/AuthContext";
 
 export const CmsNavbar = ({
   story,
@@ -19,6 +20,13 @@ export const CmsNavbar = ({
   onPublish,
   isSaving,
 }) => {
+  const { admin, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+  };
   const stationLabels = {
     toronto: "Toronto",
     hamilton: "Hamilton",
@@ -180,6 +188,17 @@ export const CmsNavbar = ({
         >
           <Send className="w-3.5 h-3.5" />
           <span>Publish</span>
+        </button>
+
+        {/* Admin Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 text-xs font-bold border border-slate-800 hover:border-rose-900/50 transition-all cursor-pointer"
+          title={`Logged in as ${admin?.email || "Admin"} • Click to Log Out`}
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline">Logout</span>
         </button>
       </div>
     </header>

@@ -2,17 +2,19 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Plus, Edit, Trash2, Search, Anchor, Newspaper,
-  RefreshCw, FileText, CheckCircle2, Eye, Calendar, ArrowLeft
+  RefreshCw, FileText, CheckCircle2, Eye, Calendar, ArrowLeft, LogOut, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { storyService } from "../services/storyService";
 import { formatStoryDate } from "../utils/storyHelpers";
 import { CmsNotification } from "../components/CmsNotification";
 import { CmsConfirmModal } from "../components/CmsConfirmModal";
+import { useAuth } from "../context/AuthContext";
 import logo from "@/assets/logo.jpeg";
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { admin, logout } = useAuth();
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStation, setSelectedStation] = useState("all");
@@ -105,6 +107,19 @@ export const AdminDashboard = () => {
                 <Plus className="w-4 h-4 mr-1" /> New Story
               </Link>
             </Button>
+
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                navigate("/admin/login");
+              }}
+              className="text-xs font-bold text-slate-300 hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-rose-950/40 border border-slate-700/60 transition-colors inline-flex items-center gap-1 cursor-pointer"
+              title={`Signed in as ${admin?.email || "Admin"} • Click to Sign Out`}
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Logout</span>
+            </button>
           </div>
         </div>
       </header>

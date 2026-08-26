@@ -37,12 +37,16 @@ import {
   AdminDashboard,
   StoryEditorPage,
   ArticleViewPage,
+  AdminLoginPage,
+  AuthProvider,
+  ProtectedRoute,
 } from "./cms";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <AuthProvider>
+        <Routes>
         {/* ─── 1. MTSSO UMBRELLA REGIONAL LEVEL ROUTES ─── */}
         <Route element={<MtssoSiteLayout />}>
           <Route path="/" element={<MtssoHome />} />
@@ -101,15 +105,38 @@ function App() {
         <Route path="/stations/port-colborne" element={<PortColborneStation />} />
         <Route path="/port-colborne" element={<Navigate to="/stations/port-colborne" replace />} />
 
-        {/* ─── 6. CMS ADMIN STUDIO ROUTES (FULLSCREEN GRAPESJS BUILDER) ─── */}
+        {/* ─── 6. CMS ADMIN STUDIO ROUTES (PROTECTED) ─── */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<Navigate to="/admin/stories" replace />} />
-        <Route path="/admin/stories" element={<AdminDashboard />} />
-        <Route path="/admin/stories/new" element={<StoryEditorPage />} />
-        <Route path="/admin/stories/edit/:id" element={<StoryEditorPage />} />
+        <Route
+          path="/admin/stories"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/stories/new"
+          element={
+            <ProtectedRoute>
+              <StoryEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/stories/edit/:id"
+          element={
+            <ProtectedRoute>
+              <StoryEditorPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

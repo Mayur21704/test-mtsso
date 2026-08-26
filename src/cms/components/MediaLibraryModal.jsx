@@ -53,6 +53,11 @@ export const MediaLibraryModal = ({ isOpen, onClose, onSelect, selectMode = fals
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${API_BASE}/api/upload`);
 
+      const token = localStorage.getItem("mtsso_admin_token");
+      if (token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      }
+
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setUploadProgress(Math.round((e.loaded / e.total) * 100));

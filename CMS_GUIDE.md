@@ -1,128 +1,258 @@
-# MTSSO Central News & Story CMS — Frontend Guide & User Manual
+# MTSSO Central News & Story CMS — Frontend Guide & Visual Studio Reference
 
-This guide is designed for **website administrators, chaplains, and content creators** using the **MTSSO Visual Story Builder (GrapesJS)** to design, tag, and publish articles, ship visit dispatches, and port announcements across Southern Ontario port stations.
-
----
-
-## 🔗 Quick Access Links
-
-| Page | URL | Purpose |
-| :--- | :--- | :--- |
-| **Story Management Dashboard** | [`http://localhost:5173/admin/stories`](http://localhost:5173/admin/stories) | View, filter, edit, or delete existing stories |
-| **Visual Story Builder** | [`http://localhost:5173/admin/stories/new`](http://localhost:5173/admin/stories/new) | Create and design a new article using drag-and-drop |
-| **Central Regional Newsroom** | [`http://localhost:5173/news`](http://localhost:5173/news) | Public multi-station newsroom with port filters |
-| **Station Portals** | [`/stations/toronto`](http://localhost:5173/stations/toronto), [`/stations/hamilton`](http://localhost:5173/stations/hamilton), etc. | Port-specific community landing pages |
+This guide provides a comprehensive technical reference and operational manual for the **MTSSO Visual Story Builder (GrapesJS)** and frontend CMS module. It covers authentication, editor controls, custom blocks, trait synchronization, media library integration, and public reader rendering.
 
 ---
 
-## ✍️ Step-by-Step: How to Create and Publish a Story
-
-### Step 1: Open the Admin Dashboard
-1. Go to **`http://localhost:5173/admin/stories`** (or click *"Open CMS Story Admin Studio"* from `/news`).
-2. Click the orange **"+ Create New Story"** button in the top right.
-
----
-
-### Step 2: Design Your Article Visually (Drag & Drop)
-The builder opens in fullscreen with MTSSO brand styling (Navy & Coral).
-
-* **Edit Text Directly**: Click on any text, heading, or paragraph on the central canvas and type your narrative.
-* **Drag Blocks into Canvas**: Open the **"🧩 Blocks"** tab in the right sidebar and drag components onto your canvas:
-  - 📰 **Article Header**: Full-width title banner with station badge and coral accent.
-  - 💬 **Chaplain Quote Box**: Styled quote box with avatar and coral border.
-  - 📄 **PDF / Document Card**: Card with download button for seafarer forms or port notices.
-  - ◫ **Layout Grids (1, 2, or 3 Columns)**: Multi-column responsive containers.
-  - 📊 **Port Stat Grid**: 3-card counters (*Vessels Visited*, *Seafarers Served*, *Parcels Delivered*).
-  - 📢 **Notice Box**: Amber alert box for urgent port logistics or ship arrival schedules.
-  - 🔘 **Coral / Navy Buttons**: Action buttons linking to donation, contact, or volunteer forms.
-  - 📷 **Image with Caption** & 🎥 **Video Embed**: Add photos or YouTube videos.
-
----
-
-### Step 3: Style Elements (The "🎨 Styles" Tab)
-Click any element on the canvas, then switch to the **"🎨 Styles"** tab in the right panel to customize:
-* **Typography**: Change font sizes, weights, letter spacing, text alignment, or text colors.
-* **Layout & Flexbox**: Set alignment, direction, or spacing between cards.
-* **Dimensions & Spacing**: Adjust width, margins (outer space), and padding (inner space).
-* **Background & Colors**: Pick custom background colors or gradient accents.
-* **Borders & Shadows**: Add rounded corners or subtle drop shadows.
+## 📑 Table of Contents
+1. [Quick Access & Route Map](#1-quick-access--route-map)
+2. [Authentication & Session Flow](#2-authentication--session-flow)
+   - [Login Screen (`/admin/login`)](#login-screen-adminlogin)
+   - [Route Protection (`<ProtectedRoute>`)](#route-protection-protectedroute)
+   - [JWT Token Expiry & Auto-Redirection](#jwt-token-expiry--auto-redirection)
+   - [Logout Controls](#logout-controls)
+3. [Visual Studio Workspace Architecture (`GrapesEditor.jsx`)](#3-visual-studio-workspace-architecture-grapeseditorjsx)
+   - [Imperative Ref Methods](#imperative-ref-methods)
+   - [Sidebar Tabs Overview](#sidebar-tabs-overview)
+   - [Canvas Selection & Highlighter CSS](#canvas-selection--highlighter-css)
+4. [Live Trait & Text Synchronizer System](#4-live-trait--text-synchronizer-system)
+   - [Headline & Content Text Editing](#headline--content-text-editing)
+   - [Button & Link Trait Controls](#button--link-trait-controls)
+   - [Direct DOM Event Binding Pattern](#direct-dom-event-binding-pattern)
+5. [Custom Drag-and-Drop Blocks (`customBlocks.js`)](#5-custom-drag-and-drop-blocks-customblocksjs)
+   - [Video Player Block (`mtsso-video`)](#video-player-block-mtsso-video)
+   - [PDF Document Card & Embed](#pdf-document-card--embed)
+   - [Editorial & Maritime Block Catalog](#editorial--maritime-block-catalog)
+6. [Custom MTSSO Media Library Modal (`MediaLibraryModal.jsx`)](#6-custom-mtsso-media-library-modal-medialibrarymodaljsx)
+   - [Multi-File Drag & Drop Engine](#multi-file-drag--drop-engine)
+   - [Video Thumbnail Previews](#video-thumbnail-previews)
+   - [1-Tap Insertion Logic](#1-tap-insertion-logic)
+7. [1:1 Live WYSIWYG Preview Modal (`StoryPreviewModal.jsx`)](#7-11-live-wysiwyg-preview-modal-storypreviewmodaljsx)
+8. [Draft vs. Live Published Workflow](#8-draft-vs-live-published-workflow)
+9. [Frontend Directory Structure & Module Index](#9-frontend-directory-structure--module-index)
 
 ---
 
-### Step 4: Upload Media (Images & Documents)
-1. Click the **"📁 Media & File Uploads"** button in the top toolbar (or double-click any image).
-2. Upload your images (`.jpg`, `.png`, `.webp`, `.svg`) or documents (`.pdf`, `.doc`, `.docx`).
-3. Uploaded files are saved to `F:\mtsc\MTSSO\uploads\` and can be inserted into any article with one click.
+## 1. Quick Access & Route Map
+
+| Page / Component | Route | Access | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Admin Login** | [`/admin/login`](http://localhost:5174/admin/login) | Public | Sign in with email & password |
+| **Story Management Dashboard** | [`/admin/stories`](http://localhost:5174/admin/stories) | Protected (JWT) | Manage, search, filter, edit, or delete stories |
+| **Visual Story Studio (New)** | [`/admin/stories/new`](http://localhost:5174/admin/stories/new) | Protected (JWT) | Fullscreen GrapesJS drag-and-drop authoring |
+| **Visual Story Studio (Edit)** | [`/admin/stories/edit/:id`](http://localhost:5174/admin/stories/edit/1) | Protected (JWT) | Edit working draft of an existing article |
+| **Central Regional Newsroom** | [`/news`](http://localhost:5174/news) | Public | Multi-station public news feed with filters |
+| **Public Dynamic Story Reader** | [`/news/:slug`](http://localhost:5174/news/example-slug) | Public | Dedicated SEO article page rendering published HTML/CSS |
 
 ---
 
-### Step 5: Switch Responsive Viewports
-In the top toolbar, click:
-* **Desktop**: Full-width computer monitor layout.
-* **Tablet (768px)**: iPad and tablet view.
-* **Mobile (375px)**: Smartphone layout.
+## 2. Authentication & Session Flow
+
+### Login Screen (`/admin/login`)
+- Located at [frontend/src/cms/pages/AdminLoginPage.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/pages/AdminLoginPage.jsx).
+- 100% styled to the **MTSSO Brand Identity**:
+  - Pure White card (`max-w-[420px]`, `rounded-2xl`, `shadow-xl`, `border-slate-200`).
+  - Navy `#1e2456` bold typography, Slate `#f8fafc` input backgrounds, and Coral `#e05a2b` focus rings/action buttons.
+  - Authentic MTSSO logo header and subtle background gradients (`from-slate-50 via-slate-100`).
+- Fields: Admin Email & Password (with eye toggle).
+- Handles redirect queries (e.g. `/admin/login?redirect=%2Fadmin%2Fstories%2Fnew`).
 
 ---
 
-### Step 6: Tag Station, Category & Summary
-1. Click the **"Station & Settings"** button in the top navigation bar.
-2. Fill in the story details:
-   * **Story Title**: Article headline.
-   * **Target Station**: Choose which station this story belongs to:
-     * *Toronto Station*
-     * *Hamilton Station*
-     * *Oshawa Station*
-     * *Port Colborne Station*
-     * *MTSSO Regional* (Network-wide)
-     * *All Stations*
-   * **Category**: Choose *Ship Visits*, *Events*, *Station News*, *Stories*, *Volunteers*, *Community*, or *Announcements*.
-   * **Excerpt / Summary**: 1–2 sentences summarizing the article for the newsfeed cards.
-   * **Featured Image**: Enter the image URL or pick an uploaded image thumbnail.
-   * **Author & Location**: e.g., *"Pastor Dan Phannenhour"* / *"Port of Hamilton"*.
-3. Click **"Save Story Settings"**.
+### Route Protection (`<ProtectedRoute>`)
+- Located at [frontend/src/cms/components/ProtectedRoute.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/components/ProtectedRoute.jsx).
+- Wraps all `/admin/stories/*` routes in `App.jsx`.
+- If `isAuthenticated === false`, immediately captures the current target URL and redirects the user to `/admin/login?redirect=...`.
 
 ---
 
-### Step 7: Preview & Publish
-1. Click **"Preview"** in the top bar to see a live simulation of how visitors will view the article.
-2. Click the orange **"Publish Story"** button.
+### JWT Token Expiry & Auto-Redirection
+- Managed inside [frontend/src/cms/context/AuthContext.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/context/AuthContext.jsx).
+- **Global 401 Interception**:
+  - When backend returns `401 Unauthorized` (`TokenExpiredError` or `code: "TOKEN_EXPIRED"`), `authFetch` and `storyService.js` catch the response.
+  - Automatically clears `localStorage` tokens (`mtsso_admin_token`, `mtsso_admin_user`).
+  - Smoothly navigates to `/admin/login?expired=1`.
+  - The login page renders an amber **"Session Expired"** alert banner.
 
 ---
 
-### Step 8: View on the Live Website
-* **Central Newsroom**: Visit **`http://localhost:5173/news`**. Your new article appears at the top of the feed with its station badge and category tag.
-* **Station Filter**: Clicking **"Hamilton"** or **"Toronto"** filters the feed to show stories for that port.
-* **Read Full Article**: Clicking the story card opens its dedicated dynamic page at **`http://localhost:5173/news/your-story-slug`**.
+### Logout Controls
+- **Studio Navbar (`CmsNavbar.jsx`)**: Includes a dedicated Logout button with hover styling in the top action bar.
+- **Story Dashboard (`AdminDashboard.jsx`)**: Displays admin profile info and a **Sign Out** button in the header.
 
 ---
 
-## 💻 Frontend Developer Reference
+## 3. Visual Studio Workspace Architecture (`GrapesEditor.jsx`)
 
-All CMS code is strictly encapsulated inside `frontend/src/cms/`:
+Located at [frontend/src/cms/components/GrapesEditor.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/components/GrapesEditor.jsx).
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│  CmsNavbar (Back, Device Switchers, Undo/Redo, Media, Preview, Publish)│
+├──────────────────────────────────────────────────────┬─────────────────┤
+│  Canvas Dimension Sub-Bar (1280px • Desktop, Clear)  │  Studio Tools   │
+├──────────────────────────────────────────────────────┤  ┌───────────┐  │
+│                                                      │  │ ⊞ Blocks  │  │
+│                                                      │  │ 🎨 Styles │  │
+│              GrapesJS Iframe Canvas                  │  │ 🔗 Links  │  │
+│       (Paper Artboard with Smooth Margins)           │  │ 📑 Layers │  │
+│                                                      │  └───────────┘  │
+│                                                      │  Accordion Form │
+└──────────────────────────────────────────────────────┴─────────────────┘
+```
+
+### Imperative Ref Methods
+Parent pages access the editor through `useImperativeHandle`:
+* `undo()`: Runs GrapesJS undo command.
+* `redo()`: Runs GrapesJS redo command.
+* `clear()`: Wipes the canvas clean.
+* `openAssets()`: Opens asset manager.
+* `getEditor()`: Exposes the underlying GrapesJS editor instance.
+* `getSelected()`: Returns currently selected component on canvas.
+* `getHtml()`: Exports clean HTML markup.
+* `getCss()`: Exports scoped CSS styles.
+* `getProjectData()`: Exports full JSON AST for lossless re-editing.
+
+---
+
+### Sidebar Tabs Overview
+1. **`🧩 Blocks` (`#gjs-blocks-container`)**:
+   - 2-column clean white grid of drag-and-drop components with coral hover effects.
+   - Instant search filter bar.
+2. **`🎨 Styles` (`#gjs-style-container`)**:
+   - Accordion sectors for Typography, Dimensions & Spacing, Flex Layout, Backgrounds & Native Color Pickers, and Borders & Shadows.
+3. **`🔗 Links` (`#gjs-traits-container`)**:
+   - Component settings for changing Button/Link text, URLs, open target (`_blank`), image source URLs, and headlines.
+4. **`📑 Layers` (`#gjs-layers-container`)**:
+   - Tree view of DOM components on the canvas.
+
+---
+
+### Canvas Selection & Highlighter CSS
+Defined in [frontend/src/cms/styles/grapesCustom.css](file:///f:/mtsc/MTSSO/frontend/src/cms/styles/grapesCustom.css):
+* **Selected Component**: Solid coral (`#e05a2b`) 2px outline with 2px offset.
+* **Hover Highlighter**: Dashed Navy (`#2d3580`) 2px outline.
+* **Component Badge**: Coral pill label (e.g., `IMG`, `A`, `H2`, `DIV`).
+* **Floating Toolbar**: Navy `#1e2456` action bar with Move, Copy, and Delete icons.
+
+---
+
+## 4. Live Trait & Text Synchronizer System
+
+GrapesJS custom traits in [frontend/src/cms/config/customBlocks.js](file:///f:/mtsc/MTSSO/frontend/src/cms/config/customBlocks.js) and selection handlers in `GrapesEditor.jsx` ensure that editing text in the sidebar immediately updates both the canvas and the exported HTML.
+
+### 1. Headline & Content Text Editing (`element-text-editor`)
+- Appears on any heading (`H1`–`H6`), paragraph (`P`), or blockquote.
+- Updates component content in real time via direct `elInput.oninput` event listeners.
+
+### 2. Button & Link Trait Controls (`link-title-editor` & `link-url`)
+- Automatically detects links (`<a href="...">`) even when clicking child elements or text nodes by walking up the ancestor chain (`findParent(comp, 'A')`).
+- Provides 4 dedicated inputs:
+  1. **Button / Link Text**: Live text changer.
+  2. **Link URL (href)**: Target destination (e.g. `https://...`, `/donate`, `/uploads/guide.pdf`).
+  3. **Open In**: `_self` (Same Tab) or `_blank` (New Tab).
+  4. **Hover Tooltip (title)**: Accessibility title attribute.
+
+---
+
+## 5. Custom Drag-and-Drop Blocks (`customBlocks.js`)
+
+### Video Player Block (`mtsso-video`)
+- Supports **both direct uploaded video files and video embeds**:
+  - If a direct video URL is provided (`.mp4`, `.webm`, `.mov`, `.ogg`, or `/uploads/...mp4`), it renders a responsive **HTML5 `<video controls>` player**.
+  - If a YouTube or Vimeo link is provided, it auto-converts the URL and renders a responsive `<iframe>` embed player.
+- Aspect ratio controls: `16:9 (Standard)`, `4:3 (Classic)`, or `1:1 (Square)`.
+
+### PDF Document Card & Embed (`mtsso-pdf-embed`)
+- Renders an interactive PDF preview card or embedded document viewer with custom height options (`500px`, `700px`, `900px`).
+
+### Editorial & Maritime Block Catalog
+- 📰 **Article Header**: Full-width headline banner with station badge and coral accent.
+- 💬 **Chaplain Quote Box**: Styled quotation container with quote marks and author citation.
+- 📊 **Port Stat Grid**: 3-card counter block for port statistics.
+- 📢 **Notice Callout**: Amber warning alert for shipping updates or emergency port logistics.
+- 🔘 **Action Buttons**: Solid Coral and Navy pill buttons.
+- ◫ **Multi-Column Layouts**: 1-Column, 2-Column (50/50), and 3-Column responsive flex grids.
+
+---
+
+## 6. Custom MTSSO Media Library Modal (`MediaLibraryModal.jsx`)
+
+Located at [frontend/src/cms/components/MediaLibraryModal.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/components/MediaLibraryModal.jsx).
+
+### Features:
+1. **Multi-File Drag & Drop**:
+   - Drag multiple files directly into the dashed upload zone or click to browse.
+   - Real-time progress bar tracking upload completion.
+2. **Video & Document Support**:
+   - Accepts images, videos (MP4, WebM, MOV up to 500MB), and PDFs.
+   - Video items render interactive video preview cards with a coral Play badge.
+3. **Search & Filter Tabs**:
+   - Switch between **All**, **Images**, **Videos**, and **Docs**.
+   - Instant search bar filtering by file name.
+4. **1-Tap & Double-Click Insertion**:
+   - Single-click to select (shows coral checkmark).
+   - Double-click or click **"Insert Selected"** to insert into the canvas.
+   - Automatically detects active canvas selection:
+     - If an `<img>` is selected → updates image `src`.
+     - If a video block is selected → updates video URL.
+     - If a button/link is selected → sets `href`.
+     - If nothing is selected → creates and appends the appropriate video/image component.
+
+---
+
+## 7. 1:1 Live WYSIWYG Preview Modal (`StoryPreviewModal.jsx`)
+
+Located at [frontend/src/cms/components/StoryPreviewModal.jsx](file:///f:/mtsc/MTSSO/frontend/src/cms/components/StoryPreviewModal.jsx).
+
+Renders the article **identically to the public `ArticleViewPage.jsx`**:
+* **Browser Chrome Bar**: Simulated browser URL pill (`mtsso.org/news/your-slug`) with window dots.
+* **Navy Hero Header**: Displays station badge, category tag, story title, author, location, and formatted publication date.
+* **Breadcrumb Navigation**: `Home > News & Stories > Title`.
+* **Rendered Body**: Injects GrapesJS HTML & scoped CSS with `.cms-article-rendered-body` typography styles.
+* **Station Callout Card**: Bottom station card linking to port stations.
+
+---
+
+## 8. Draft vs. Live Published Workflow
+
+1. **Working Draft (`onSaveDraft`)**:
+   - Updates `htmlContent` and `cssContent` in MySQL.
+   - Leaves public readers viewing previous `publishedHtml`.
+2. **Publishing (`onPublish`)**:
+   - Copies `htmlContent -> publishedHtml` and `cssContent -> publishedCss`.
+   - Sets `status = "published"` and refreshes `publishedAt`.
+   - Public readers immediately receive the new version at `/news/:slug`.
+
+---
+
+## 9. Frontend Directory Structure & Module Index
 
 ```
 frontend/src/cms/
+├── context/
+│   └── AuthContext.jsx           # JWT Session State, Token Storage & Expiry Redirection
 ├── components/
-│   ├── GrapesEditor.jsx          # React component wrapping GrapesJS canvas & toolbars
-│   ├── StoryMetadataModal.jsx    # Station, Category, Excerpt, and Author modal
-│   ├── CmsNavbar.jsx             # Top bar (Publish, Save Draft, Preview, Settings)
-│   └── StoryPreviewModal.jsx     # Live simulated reader preview
+│   ├── ProtectedRoute.jsx        # Route Guard for Admin Pages
+│   ├── GrapesEditor.jsx          # GrapesJS Canvas Wrapper & Trait Synchronizer
+│   ├── MediaLibraryModal.jsx     # Custom MTSSO Media Gallery (Uploads, Search, Video cards)
+│   ├── StoryMetadataModal.jsx    # Station & Category Selector Modal
+│   ├── StoryPreviewModal.jsx     # 1:1 Live WYSIWYG Preview Modal
+│   ├── CmsNavbar.jsx             # Admin Top Navigation (Publish, Draft, Preview, Logout)
+│   ├── CmsConfirmModal.jsx       # Custom Confirmation Popup
+│   └── CmsNotification.jsx       # Brand Toast Notification
 ├── config/
-│   ├── grapesConfig.js           # Viewport devices, style sectors & asset manager
-│   ├── customBlocks.js           # Pre-styled MTSSO maritime blocks
-│   └── defaultTemplate.js        # Default starter HTML template
+│   ├── grapesConfig.js           # GrapesJS Viewports, CSS, & Styling
+│   ├── customBlocks.js           # Custom Blocks (Video Embeds, HTML5 Video, Quotes, PDFs)
+│   └── defaultTemplate.js        # Clean Starter Canvas Layout
 ├── services/
-│   └── storyService.js           # REST API client with offline LocalStorage fallback
+│   └── storyService.js           # REST API Client with JWT Auth & Cache Fallback
 ├── pages/
-│   ├── AdminDashboard.jsx        # Admin story manager table (/admin/stories)
-│   ├── StoryEditorPage.jsx       # Fullscreen builder page (/admin/stories/new)
-│   └── ArticleViewPage.jsx       # Dynamic public article reader (/news/:slug)
+│   ├── AdminLoginPage.jsx        # MTSSO Brand Admin Login Page (/admin/login)
+│   ├── AdminDashboard.jsx        # Story Management Table (/admin/stories)
+│   ├── StoryEditorPage.jsx       # Fullscreen Visual Builder Page
+│   └── ArticleViewPage.jsx       # Public Dynamic Reader (/news/:slug)
 ├── styles/
-│   └── grapesCustom.css          # MTSSO Brand Studio CSS (Navy #2d3580, Coral #e05a2b)
-└── index.js                      # Public module exports
+│   └── grapesCustom.css          # MTSSO White Theme CSS (Navy #1e2456, Coral #e05a2b)
+└── index.js                      # Public Module Exports
 ```
-
-### Data Synchronization Flow:
-1. `storyService.js` makes HTTP requests to the backend (`http://localhost:5000/api/stories`).
-2. If the backend is running, stories are saved and fetched from **MySQL**.
-3. If the backend is temporarily offline during frontend development, `storyService.js` automatically caches changes to browser **LocalStorage** so you can keep working without interruption!
