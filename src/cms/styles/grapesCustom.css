@@ -1,0 +1,79 @@
+/* GrapesJS Custom Studio Styling for MTSSO */
+@import "grapesjs/dist/css/grapes.min.css";
+
+.gjs-editor-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+/* Blocks sidebar */
+.gjs-block {
+  width: 100% !important;
+  min-height: 55px !important;
+  margin: 6px 0 !important;
+  border-radius: 10px !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.gjs-block:hover {
+  background: #2d3580 !important;
+  border-color: #e05a2b !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(224, 90, 43, 0.25) !important;
+}
+
+.gjs-block-category .gjs-title {
+  background: #0f172a !important;
+  color: #94a3b8 !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 10px 14px !important;
+  border-top: 1px solid #1e293b !important;
+}
+
+/* Style Manager inputs */
+.gjs-sm-sector .gjs-sm-sector-title {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid #334155 !important;
+  padding: 10px 14px !important;
+}
+
+.gjs-field {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+  border-radius: 6px !important;
+}
+
+.gjs-field input, .gjs-field select {
+  color: #f8fafc !important;
+}
+
+/* Canvas scrollbars & frame */
+.gjs-cv-canvas {
+  background-color: #0b1120 !important;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.gjs-frame-wrapper {
+  background: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+  margin: 20px auto !important;
+}

@@ -32,6 +32,13 @@ import { HamiltonStation } from "./stations/hamilton";
 import { OshawaStation } from "./stations/oshawa";
 import { PortColborneStation } from "./stations/port-colborne";
 
+// ─── GrapesJS Central Story CMS Modules ───
+import {
+  AdminDashboard,
+  StoryEditorPage,
+  ArticleViewPage,
+} from "./cms";
+
 function App() {
   return (
     <BrowserRouter>
@@ -43,6 +50,9 @@ function App() {
           <Route path="/stations" element={<StationsHub />} />
           <Route path="/for-seafarers" element={<ForSeafarers />} />
           <Route path="/news" element={<NewsStories />} />
+          
+          {/* Public Dynamic Article Reader for GrapesJS Stories */}
+          <Route path="/news/:slug" element={<ArticleViewPage />} />
         </Route>
 
         {/* ─── 2. TORONTO STATION (EXACT TORENTO NAVBAR & FOOTER UI) ─── */}
@@ -90,6 +100,12 @@ function App() {
         {/* ─── 5. PORT COLBORNE STATION (COMING SOON & HOME ONLY NAV) ─── */}
         <Route path="/stations/port-colborne" element={<PortColborneStation />} />
         <Route path="/port-colborne" element={<Navigate to="/stations/port-colborne" replace />} />
+
+        {/* ─── 6. CMS ADMIN STUDIO ROUTES (FULLSCREEN GRAPESJS BUILDER) ─── */}
+        <Route path="/admin" element={<Navigate to="/admin/stories" replace />} />
+        <Route path="/admin/stories" element={<AdminDashboard />} />
+        <Route path="/admin/stories/new" element={<StoryEditorPage />} />
+        <Route path="/admin/stories/edit/:id" element={<StoryEditorPage />} />
 
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />

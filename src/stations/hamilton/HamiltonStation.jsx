@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { Anchor, ArrowLeft, Sparkles } from "lucide-react";
+import { Anchor, ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpeg";
 import heroImg from "@/assets/newimg/MS1A Different World, Just Beyond the Gangway.jpg";
@@ -94,7 +94,7 @@ export function HamiltonStation() {
         <div className="relative z-10 max-w-2xl w-full text-center text-white space-y-8 bg-slate-900/80 backdrop-blur-md p-8 sm:p-12 rounded-3xl border border-slate-700/60 shadow-2xl">
           {/* Station Badge */}
           <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+            <Clock className="w-4 h-4" />
             Coming Soon
           </div>
 
