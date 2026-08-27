@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api/stories";
+const API_ROOT = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE = `${API_ROOT}/stories`;
 const LOCAL_STORAGE_KEY = "mtsso_stories_cms_cache";
 
 /**

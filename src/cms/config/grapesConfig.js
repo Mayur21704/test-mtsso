@@ -3,7 +3,8 @@
  * Clean, lightweight, modern studio with complete default values and numeric validation.
  */
 export const getGrapesConfig = (containerId = "gjs-canvas-target", options = {}) => {
-  const uploadEndpoint = import.meta.env.VITE_UPLOAD_URL || "http://localhost:5000/api/upload";
+  const apiRoot = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+  const uploadEndpoint = `${apiRoot}/upload`;
 
   return {
     container: `#${containerId}`,

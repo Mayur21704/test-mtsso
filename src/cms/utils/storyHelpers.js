@@ -1,6 +1,21 @@
 /**
- * Utility functions for MTSSO Stories & Newsfeed
+ * Resolves clean relative media paths (/uploads/...) to the active environment media base URL
+ * (e.g. http://localhost:5000 or production Cloudflare R2 / CDN)
+ *
+ * @param {string} url
+ * @returns {string} Fully resolved media URL
  */
+export const resolveMediaUrl = (url) => {
+  if (!url || typeof url !== "string") return "";
+  const mediaBase = (import.meta.env.VITE_MEDIA_URL || "").replace(/\/+$/, "");
+
+  if (url.startsWith("/uploads") || url.startsWith("uploads/")) {
+    const clean = url.startsWith("/") ? url : `/${url}`;
+    return `${mediaBase}${clean}`;
+  }
+
+  return url;
+};
 
 /**
  * Extracts the best thumbnail image for a story.
@@ -15,33 +30,35 @@
 export const getStoryThumbnail = (story) => {
   if (!story) return null;
 
+  let rawThumbnail = null;
+
   // 1. Explicit featured image
   if (story.featuredImage && typeof story.featuredImage === "string" && story.featuredImage.trim() !== "") {
-    return story.featuredImage.trim();
+    rawThumbnail = story.featuredImage.trim();
   }
 
   // 2. Extract first <img> src from htmlContent
-  if (story.htmlContent && typeof story.htmlContent === "string") {
+  else if (story.htmlContent && typeof story.htmlContent === "string") {
     const imgMatch = story.htmlContent.match(/<img[^>]+src=["']([^"']+)["']/i);
     if (imgMatch && imgMatch[1]) {
-      return imgMatch[1];
+      rawThumbnail = imgMatch[1];
     }
   }
 
   // 3. Extract from GrapesJS projectData JSON
-  if (story.projectData) {
+  else if (story.projectData) {
     try {
       const str = typeof story.projectData === "string" ? story.projectData : JSON.stringify(story.projectData);
       const srcMatch = str.match(/"src"\s*:\s*"([^"]+)"/i);
       if (srcMatch && srcMatch[1]) {
-        return srcMatch[1];
+        rawThumbnail = srcMatch[1];
       }
     } catch (e) {
       // ignore
     }
   }
 
-  return null;
+  return rawThumbnail ? resolveMediaUrl(rawThumbnail) : null;
 };
 
 /**

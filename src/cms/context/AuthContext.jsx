@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_ROOT = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const AUTH_API = `${API_ROOT}/auth`;
 
 const AuthContext = createContext(null);
 
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/auth/me`, {
+        const res = await fetch(`${AUTH_API}/me`, {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   // Login handler
   const login = async (email, password) => {
     setSessionExpired(false);
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
+    const res = await fetch(`${AUTH_API}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Image as ImageIcon, FileText, Check, Search, Loader2, CloudUpload, Images, Video, Play } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_ROOT = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const UPLOAD_API = `${API_ROOT}/upload`;
 
 /**
  * Custom MTSSO Media Library Modal
@@ -23,7 +24,7 @@ export const MediaLibraryModal = ({ isOpen, onClose, onSelect, selectMode = fals
   const fetchFiles = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/upload`);
+      const res = await fetch(UPLOAD_API);
       const json = await res.json();
       if (json.success) setFiles(json.data || []);
     } catch (err) {
@@ -51,7 +52,7 @@ export const MediaLibraryModal = ({ isOpen, onClose, onSelect, selectMode = fals
 
     try {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${API_BASE}/api/upload`);
+      xhr.open("POST", UPLOAD_API);
 
       const token = localStorage.getItem("mtsso_admin_token");
       if (token) {
