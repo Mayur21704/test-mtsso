@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { X, Anchor, Tag, Image as ImageIcon, User, CheckCircle2, ChevronDown } from "lucide-react";
+import { X, Anchor, Tag, Image as ImageIcon, User, CheckCircle2, ChevronDown, FolderOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MediaLibraryModal } from "./MediaLibraryModal";
 
 export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,8 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
     author: "MTSSO Editorial Team",
     status: "published",
   });
+
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
 
   const stations = [
     { id: "toronto", name: "Toronto Station" },
@@ -81,132 +84,170 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-navy/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-      {/* ─── SEAMLESS 100% PURE WHITE MODAL ─── */}
-      <div className="bg-white border border-slate-200/90 rounded-[28px] w-full max-w-xl shadow-2xl text-slate-900 flex flex-col max-h-[92vh] overflow-hidden">
-        
-        {/* Header */}
-        <div className="px-6 sm:px-8 pt-6 sm:pt-7 pb-4 flex items-start justify-between gap-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-coral-pale flex items-center justify-center text-coral shadow-xs shrink-0">
-              <Anchor className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-navy leading-tight">
-                Story Settings & Tagging
-              </h2>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Assign this story to stations and configure metadata
-              </p>
-            </div>
-          </div>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-navy/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
+        {/* ─── SEAMLESS 100% PURE WHITE MODAL ─── */}
+        <div className="bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
           
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-navy hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Modal Form Body */}
-        <form onSubmit={handleSave} className="p-6 sm:p-8 space-y-4.5 overflow-y-auto custom-scrollbar">
-          
-          {/* Target Station Selector */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
-              <Anchor className="w-3.5 h-3.5 text-coral" /> Target Station
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {stations.map((st) => (
-                <button
-                  type="button"
-                  key={st.id}
-                  onClick={() => handleStationChange(st.id)}
-                  className={`p-3 rounded-xl text-xs font-bold border transition-all text-left flex items-center justify-between cursor-pointer ${
-                    formData.station === st.id
-                      ? "bg-coral text-white border-coral shadow-xs font-black"
-                      : "bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
-                  }`}
-                >
-                  <span className="truncate">{st.name}</span>
-                  {formData.station === st.id && (
-                    <CheckCircle2 className="w-4 h-4 shrink-0 ml-1 text-white" />
-                  )}
-                </button>
-              ))}
+          {/* Modal Header */}
+          <div className="px-6 py-4 border-b border-slate-100 bg-white flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-coral/10 flex items-center justify-center text-coral">
+                <Anchor className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-navy uppercase tracking-wider">
+                  Story Station & Settings
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Assign target port stations, news categories, and author metadata.
+                </p>
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-navy hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Category Dropdown (Consistent h-11 Height & Custom Arrow) */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-coral" /> Category
-            </label>
-            <div className="relative">
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all appearance-none cursor-pointer pr-10 shadow-xs"
-              >
-                {categories.map((c) => (
-                  <option key={c} value={c} className="text-navy bg-white py-1 font-bold">
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Modal Body / Form */}
+          <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto">
+            
+            {/* Row 1: Target Port Station & Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+                  <Anchor className="w-3.5 h-3.5 text-coral" /> Target Port Station
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.station}
+                    onChange={(e) => handleStationChange(e.target.value)}
+                    className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all appearance-none cursor-pointer shadow-xs"
+                  >
+                    {stations.map((st) => (
+                      <option key={st.id} value={st.id} className="text-navy font-medium bg-white">
+                        {st.name} {st.id === "mtsso" || st.id === "all" ? "(Regional)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-3.5 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-coral" /> Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all appearance-none cursor-pointer shadow-xs"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat} className="text-navy font-medium bg-white">
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-3.5 pointer-events-none" />
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Story Title */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black text-navy uppercase tracking-wider">
-              Headline Title
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
-              placeholder="e.g. Seafarers Celebrate Port Reopening in Toronto"
-            />
-          </div>
-
-          {/* Excerpt / Summary */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-black text-navy uppercase tracking-wider">
-              News Card Excerpt / Summary
-            </label>
-            <textarea
-              rows={2}
-              value={formData.excerpt}
-              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-              className="w-full bg-slate-50/70 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium text-navy placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all resize-none leading-relaxed shadow-xs"
-              placeholder="A brief 1-2 sentence preview for the central newsroom card..."
-            />
-          </div>
-
-          {/* Featured Image & Author */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Row 2: Headline Title */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-coral" /> Featured Thumbnail URL
+              <label className="text-[11px] font-black text-navy uppercase tracking-wider">
+                Headline Title
               </label>
               <input
                 type="text"
-                value={formData.featuredImage}
-                onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
-                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-medium text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
-                placeholder="https://... or /uploads/image.jpg"
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full h-11 bg-slate-50/70 border border-slate-200 rounded-xl px-4 text-xs sm:text-sm font-bold text-navy focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-xs"
+                placeholder="e.g. Seafarers Celebrate Port Reopening in Toronto"
               />
             </div>
 
+            {/* Row 3: News Card Excerpt / Summary */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-navy uppercase tracking-wider">
+                News Card Excerpt / Summary
+              </label>
+              <textarea
+                rows={2}
+                value={formData.excerpt}
+                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                className="w-full bg-slate-50/70 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium text-navy placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all resize-none leading-relaxed shadow-xs"
+                placeholder="A brief 1-2 sentence preview for the central newsroom card..."
+              />
+            </div>
+
+            {/* Row 4: Dedicated Full-Width Featured Thumbnail Section */}
+            <div className="space-y-2 p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-coral" /> Featured Thumbnail Image
+                </label>
+                {formData.featuredImage && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, featuredImage: "" })}
+                    className="text-[11px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" /> Clear Image
+                  </button>
+                )}
+              </div>
+
+              {/* Input with Integrated Browse Button */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={formData.featuredImage}
+                  onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
+                  className="flex-1 h-10 bg-white border border-slate-200 rounded-xl px-3.5 text-xs sm:text-sm font-medium text-navy focus:outline-none focus:border-coral focus:ring-2 focus:ring-coral/20 transition-all shadow-2xs"
+                  placeholder="Paste external image URL or select from library..."
+                />
+                <button
+                  type="button"
+                  onClick={() => setMediaModalOpen(true)}
+                  className="h-10 px-4 bg-coral hover:bg-coral-light text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer active:scale-95"
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  <span>Browse Media</span>
+                </button>
+              </div>
+
+              {/* Live Image Preview Card if URL attached */}
+              {formData.featuredImage && (
+                <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs animate-in fade-in duration-150">
+                  <img
+                    src={formData.featuredImage}
+                    alt="Thumbnail preview"
+                    className="w-12 h-12 object-cover rounded-lg border border-slate-100 bg-slate-50 shrink-0"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-navy truncate">{formData.featuredImage}</p>
+                    <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Active thumbnail for news cards
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Row 5: Author / Reporter */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-sky-600" /> Author / Reporter
+                <User className="w-3.5 h-3.5 text-sky-600" /> Author / Reporter Name
               </label>
               <input
                 type="text"
@@ -216,30 +257,41 @@ export const StoryMetadataModal = ({ isOpen, onClose, metadata, onSave }) => {
                 placeholder="e.g. Chaplain Dan Phannenhour"
               />
             </div>
-          </div>
 
-          {/* Modal Footer */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold px-4 h-10 rounded-xl cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              className="bg-coral hover:bg-coral-light text-white text-xs font-black px-6 h-10 rounded-xl shadow-warm cursor-pointer"
-            >
-              Save Story Settings
-            </Button>
-          </div>
-        </form>
+            {/* Modal Footer */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold px-4 h-10 rounded-xl cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-coral hover:bg-coral-light text-white text-xs font-black px-6 h-10 rounded-xl shadow-warm cursor-pointer"
+              >
+                Save Story Settings
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {/* ─── MEDIA LIBRARY MODAL FOR THUMBNAIL ─── */}
+      <MediaLibraryModal
+        isOpen={mediaModalOpen}
+        onClose={() => setMediaModalOpen(false)}
+        selectMode={true}
+        onSelect={(src) => {
+          setFormData((prev) => ({ ...prev, featuredImage: src }));
+          setMediaModalOpen(false);
+        }}
+      />
+    </>
   );
 };
 

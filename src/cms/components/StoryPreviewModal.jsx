@@ -94,17 +94,6 @@ export const StoryPreviewModal = ({ isOpen, onClose, story, html, css }) => {
           <main className="py-12 md:py-16">
             <div className="max-w-4xl mx-auto px-6 sm:px-8">
               <article className="bg-white rounded-3xl p-6 sm:p-12 md:p-16 border border-border shadow-sm">
-                {/* Featured Image */}
-                {story?.featuredImage && (
-                  <div className="mb-10 rounded-2xl overflow-hidden shadow-md aspect-[16/9]">
-                    <img
-                      src={story.featuredImage}
-                      alt={story.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
                 {/* Injected GrapesJS CSS */}
                 {css && <style>{css}</style>}
 

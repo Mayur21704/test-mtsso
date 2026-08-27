@@ -20,8 +20,10 @@ export const StoryEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [metadataModalOpen, setMetadataModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewData, setPreviewData] = useState({ html: "", css: "" });
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [assetTargetProps, setAssetTargetProps] = useState(null);
 
   // Small popup toast state
   const [toast, setToast] = useState({
@@ -77,53 +79,59 @@ export const StoryEditorPage = () => {
     loadStory();
   }, [id]);
 
-  const handleSave = async (statusOverride = null) => {
-    if (!editorRef.current) return;
+  // Handler for Save Draft & Publish
+  const handleSave = async (targetStatus = "published") => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
     setIsSaving(true);
-
     try {
-      const html = editorRef.current.getHtml();
-      const css = editorRef.current.getCss();
-      const projectData = editorRef.current.getProjectData();
-
-      const nextStatus = statusOverride || story.status || "published";
+      const htmlContent = editor.getHtml();
+      const cssContent = editor.getCss();
+      const projectData = editor.getProjectData();
 
       const payload = {
         ...story,
-        htmlContent: html,
-        cssContent: css,
+        htmlContent,
+        cssContent,
         projectData,
-        status: nextStatus,
+        status: targetStatus,
+        hasDraftChanges: targetStatus === "draft",
       };
 
-      let saved = null;
       if (id) {
-        saved = await storyService.updateStory(id, payload);
+        await storyService.updateStory(id, payload);
+        showToast(
+          "success",
+          targetStatus === "published" ? "Story Published!" : "Draft Saved",
+          targetStatus === "published"
+            ? "Your story is now live and updated across all station pages."
+            : "Draft progress saved securely. Readers will continue seeing previous live version."
+        );
       } else {
-        saved = await storyService.createStory(payload);
-        if (saved?.id) {
-          navigate(`/admin/stories/edit/${saved.id}`, { replace: true });
+        const newStory = await storyService.createStory(payload);
+        showToast(
+          "success",
+          targetStatus === "published" ? "Story Created & Published!" : "Draft Created",
+          `Story "${story.title}" has been saved.`
+        );
+        if (newStory?.id) {
+          navigate(`/admin/stories/edit/${newStory.id}`, { replace: true });
         }
       }
-
-      // Update local state so UI instantly reflects "Published" or "Draft Changes"
-      setStory((prev) => ({
-        ...prev,
-        ...(saved || payload),
-        hasDraftChanges: nextStatus === "draft" && Boolean(saved?.publishedHtml || prev.publishedHtml),
-      }));
-
-      if (nextStatus === "draft") {
-        showToast("success", "Draft Saved", "Working draft saved. Live website remains unchanged.");
-      } else {
-        showToast("success", "Story Published", "Live across MTSSO station feeds!");
-      }
     } catch (err) {
-      console.error("Failed to save story", err);
-      showToast("error", "Save Failed", err.message || "Could not save story.");
+      console.error("Save story error", err);
+      showToast("error", "Save Failed", err.message || "Could not save story to the server.");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleOpenPreview = () => {
+    const html = editorRef.current ? editorRef.current.getHtml() : story.htmlContent;
+    const css = editorRef.current ? editorRef.current.getCss() : story.cssContent;
+    setPreviewData({ html: html || "", css: css || "" });
+    setPreviewModalOpen(true);
   };
 
   if (loading) {
@@ -137,9 +145,6 @@ export const StoryEditorPage = () => {
     );
   }
 
-  const currentHtml = editorRef.current ? editorRef.current.getHtml() : story.htmlContent;
-  const currentCss = editorRef.current ? editorRef.current.getCss() : story.cssContent;
-
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-100 font-sans">
       {/* ─── CMS TOP NAVBAR ─── */}
@@ -148,8 +153,11 @@ export const StoryEditorPage = () => {
         activeDevice={activeDevice}
         onChangeDevice={(device) => setActiveDevice(device)}
         onOpenSettings={() => setMetadataModalOpen(false) || setMetadataModalOpen(true)}
-        onOpenPreview={() => setPreviewModalOpen(true)}
-        onOpenAssets={() => setMediaLibraryOpen(true)}
+        onOpenPreview={handleOpenPreview}
+        onOpenAssets={() => {
+          setAssetTargetProps(null);
+          setMediaLibraryOpen(true);
+        }}
         onUndo={() => editorRef.current?.undo()}
         onRedo={() => editorRef.current?.redo()}
         onSaveDraft={() => handleSave("draft")}
@@ -166,6 +174,10 @@ export const StoryEditorPage = () => {
           initialProjectData={story.projectData}
           activeDevice={activeDevice}
           onRequestClear={() => setClearConfirmOpen(true)}
+          onRequestOpenAssets={(props) => {
+            setAssetTargetProps(props || null);
+            setMediaLibraryOpen(true);
+          }}
         />
       </div>
 
@@ -185,8 +197,8 @@ export const StoryEditorPage = () => {
         isOpen={previewModalOpen}
         onClose={() => setPreviewModalOpen(false)}
         story={story}
-        html={currentHtml}
-        css={currentCss}
+        html={previewData.html}
+        css={previewData.css}
       />
 
       {/* ─── CLEAR CANVAS CONFIRMATION POPUP ─── */}
@@ -206,13 +218,40 @@ export const StoryEditorPage = () => {
       {/* ─── MEDIA LIBRARY MODAL ─── */}
       <MediaLibraryModal
         isOpen={mediaLibraryOpen}
-        onClose={() => setMediaLibraryOpen(false)}
+        onClose={() => {
+          setMediaLibraryOpen(false);
+          setAssetTargetProps(null);
+        }}
         selectMode={true}
         onSelect={(src, file) => {
           const editor = editorRef.current;
           if (!editor) return;
           const gjsEditor = editor.getEditor?.() || editor;
           if (!gjsEditor) return;
+
+          const isBackgroundRequest =
+            assetTargetProps?.target?.get?.("property") === "background-image" ||
+            assetTargetProps?.types?.includes?.("image");
+
+          // 1. Tell GrapesJS asset manager about the selection if it provided a callback
+          if (assetTargetProps?.select) {
+            try {
+              assetTargetProps.select(src, true);
+            } catch (e) {
+              console.warn("Could not call assetTargetProps.select", e);
+            }
+          }
+
+          // 2. If GrapesJS StyleManager property was targeted, update its value directly
+          if (assetTargetProps?.target?.setValue) {
+            try {
+              assetTargetProps.target.setValue(`url("${src}")`);
+            } catch (e) {
+              try {
+                assetTargetProps.target.setValue(src);
+              } catch (e2) {}
+            }
+          }
 
           const selected = gjsEditor.getSelected?.();
           const isVideo = file?.type === "video" || /\.(mp4|webm|ogg|mov|m4v|avi|mkv)$/i.test(src);
@@ -223,7 +262,10 @@ export const StoryEditorPage = () => {
             const type = selected.get("type");
             const mtssoType = selected.getAttributes?.()?.["data-mtsso-type"];
 
-            if (tag === "IMG" || type === "image") {
+            if (isBackgroundRequest || (assetTargetProps && tag !== "IMG" && type !== "image")) {
+              // Apply as background-image directly
+              selected.addStyle({ "background-image": `url("${src}")` });
+            } else if (tag === "IMG" || type === "image") {
               selected.set("src", src);
               selected.addAttributes({ src });
             } else if (type === "mtsso-video" || mtssoType === "video-embed") {
@@ -233,8 +275,10 @@ export const StoryEditorPage = () => {
             } else if (tag === "A" || type === "link") {
               selected.addAttributes({ href: src });
             } else {
-              // Insert into canvas next to selected
-              if (isVideo) {
+              // If none of the above, set as background-image if style manager was active, else insert
+              if (assetTargetProps) {
+                selected.addStyle({ "background-image": `url("${src}")` });
+              } else if (isVideo) {
                 gjsEditor.addComponents({
                   type: "mtsso-video",
                   video_url: src,
@@ -274,7 +318,8 @@ export const StoryEditorPage = () => {
               });
             }
           }
-          showToast("success", "Media Inserted", `"${file?.name || "Media file"}" applied to your story.`);
+          setAssetTargetProps(null);
+          showToast("success", "Media Applied", `"${file?.name || "Image"}" applied.`);
         }}
       />
 

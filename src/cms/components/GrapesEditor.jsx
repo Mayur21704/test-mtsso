@@ -15,6 +15,7 @@ export const GrapesEditor = forwardRef(({
   initialProjectData = null,
   activeDevice = "Desktop",
   onRequestClear,
+  onRequestOpenAssets,
   onEditorReady,
 }, ref) => {
   const editorRef = useRef(null);
@@ -41,7 +42,13 @@ export const GrapesEditor = forwardRef(({
       }
     },
     clear: () => editorRef.current?.runCommand("core:canvas-clear"),
-    openAssets: () => editorRef.current?.runCommand("open-assets"),
+    openAssets: (opts) => {
+      if (onRequestOpenAssets) {
+        onRequestOpenAssets(opts || {});
+      } else {
+        editorRef.current?.runCommand("open-assets", opts);
+      }
+    },
     getEditor: () => editorRef.current,
     getSelected: () => editorRef.current?.getSelected(),
     setDevice: (device) => editorRef.current?.setDevice(device),
@@ -53,9 +60,24 @@ export const GrapesEditor = forwardRef(({
   useEffect(() => {
     if (editorRef.current) return;
 
-    const config = getGrapesConfig("gjs-canvas-target");
+    const config = getGrapesConfig("gjs-canvas-target", {
+      onCustomAssetOpen: (props) => {
+        if (onRequestOpenAssets) {
+          onRequestOpenAssets(props);
+        }
+      },
+    });
     const editor = grapesjs.init(config);
     editorRef.current = editor;
+
+    // Route open-assets command directly to custom MTSSO Media Library
+    editor.Commands.add("open-assets", {
+      run(ed, sender, opts = {}) {
+        if (onRequestOpenAssets) {
+          onRequestOpenAssets(opts);
+        }
+      },
+    });
 
     // Register modern MTSSO blocks & grids
     registerCustomBlocks(editor);

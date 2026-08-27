@@ -114,17 +114,6 @@ export const ArticleViewPage = () => {
       <main className="py-12 md:py-16">
         <div className="container-page max-w-4xl mx-auto">
           <article className="bg-white rounded-3xl p-6 sm:p-12 md:p-16 border border-border shadow-sm">
-            {/* Featured Image if available and not in content */}
-            {story.featuredImage && (
-              <div className="mb-10 rounded-2xl overflow-hidden shadow-md aspect-[16/9]">
-                <img
-                  src={story.featuredImage}
-                  alt={story.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
             {/* Injected GrapesJS CSS */}
             {story.cssContent && <style>{story.cssContent}</style>}
 

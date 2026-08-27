@@ -2,7 +2,7 @@
  * GrapesJS Studio Configuration for MTSSO
  * Clean, lightweight, modern studio with complete default values and numeric validation.
  */
-export const getGrapesConfig = (containerId = "gjs-canvas-target") => {
+export const getGrapesConfig = (containerId = "gjs-canvas-target", options = {}) => {
   const uploadEndpoint = import.meta.env.VITE_UPLOAD_URL || "http://localhost:5000/api/upload";
 
   return {
@@ -13,13 +13,25 @@ export const getGrapesConfig = (containerId = "gjs-canvas-target") => {
     storageManager: false,
     selectorManager: { componentFirst: true },
 
-    // Asset Manager for Uploading and selecting Images & Documents
+    // Custom Asset Manager to integrate with MTSSO Media Library Modal
     assetManager: {
       upload: uploadEndpoint,
       uploadName: "files",
       multiUpload: true,
       autoAdd: true,
       embedAsBase64: false,
+      custom: {
+        open(props) {
+          if (options.onCustomAssetOpen) {
+            options.onCustomAssetOpen(props);
+          }
+        },
+        close(props) {
+          if (options.onCustomAssetClose) {
+            options.onCustomAssetClose(props);
+          }
+        },
+      },
     },
 
     deviceManager: {
