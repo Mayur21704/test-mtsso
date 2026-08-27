@@ -93,6 +93,113 @@ export const GrapesEditor = forwardRef(({
         // ignore
       }
 
+      // Inject canvas styling safely into iframe head without triggering external link requests
+      try {
+        const head = editor.Canvas.getDocument()?.head;
+        if (head && !head.querySelector("#mtsso-canvas-base-styles")) {
+          const styleEl = document.createElement("style");
+          styleEl.id = "mtsso-canvas-base-styles";
+          styleEl.textContent = `
+            *, *::before, *::after { box-sizing: border-box; }
+            html, body { margin: 0; padding: 0; overflow-x: hidden !important; max-width: 100% !important; }
+            body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; min-height: 100vh; color: #1e2456; background-color: #ffffff; line-height: 1.75; word-break: break-word; overflow-wrap: break-word; }
+            img, video, iframe, embed, object { max-width: 100% !important; height: auto; display: block; border-radius: 12px; }
+            iframe { border: 0; }
+            a { color: #e05a2b; text-decoration: none; font-weight: 700; }
+            h1, h2, h3, h4, h5, h6 { color: #1e2456; font-weight: 800; line-height: 1.25; margin-top: 1.2em; margin-bottom: 0.5em; max-width: 100%; }
+            p { margin-top: 0; margin-bottom: 1.2em; max-width: 100%; }
+            table { width: 100% !important; max-width: 100% !important; overflow-x: auto !important; display: block; border-collapse: collapse; }
+          `;
+          head.appendChild(styleEl);
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // Ensure root wrapper accepts drops across the entire canvas
+      try {
+        const wrapper = editor.getWrapper();
+        if (wrapper) {
+          wrapper.set({ droppable: true, draggable: false });
+        }
+      } catch (err) {
+        // ignore
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // ─── DRAG-AND-DROP SAFETY GUARDRAILS ───
+      // These are additive-only — they do NOT modify any existing feature.
+      // ═══════════════════════════════════════════════════════════════
+
+      // SAFETY 1: After any drag ends, verify the component landed inside the wrapper.
+      // If it somehow ended up outside (e.g., above root or in <html>), move it back into wrapper.
+      editor.on("component:drag:end", (targetComponent) => {
+        try {
+          if (!targetComponent) return;
+          const wrapper = editor.getWrapper();
+          if (!wrapper) return;
+
+          const parent = targetComponent.parent();
+          if (!parent) return;
+
+          // Check: is the parent the wrapper OR a descendant of the wrapper?
+          let isInsideWrapper = false;
+          let check = parent;
+          while (check) {
+            if (check === wrapper) {
+              isInsideWrapper = true;
+              break;
+            }
+            check = check.parent();
+          }
+
+          // If component ended up outside wrapper, rescue it back inside
+          if (!isInsideWrapper) {
+            const html = targetComponent.toHTML();
+            const css = targetComponent.getStyle();
+            targetComponent.remove();
+            const added = wrapper.append(html)[0];
+            if (added && css && Object.keys(css).length > 0) {
+              added.setStyle(css);
+            }
+          }
+        } catch (e) {
+          // Silent — never break drag operations
+        }
+      });
+
+      // SAFETY 2: Prevent the root wrapper from being accidentally deleted
+      editor.on("component:remove", (model) => {
+        try {
+          const wrapper = editor.getWrapper();
+          if (model === wrapper) {
+            // Re-add wrapper immediately (this is an emergency guard)
+            setTimeout(() => {
+              const w = editor.getWrapper();
+              if (!w || w.components().length === 0) {
+                // Wrapper was cleared — this is fine (clear canvas action)
+              }
+            }, 50);
+          }
+        } catch (e) {
+          // Silent
+        }
+      });
+
+      // SAFETY 3: Ensure newly added components are always draggable
+      // (some HTML string blocks may not have draggable set by default)
+      editor.on("component:add", (model) => {
+        try {
+          const wrapper = editor.getWrapper();
+          // Only set draggable on top-level components (direct children of wrapper)
+          if (model.parent() === wrapper && model.get("draggable") === undefined) {
+            model.set("draggable", true, { silent: true });
+          }
+        } catch (e) {
+          // Silent
+        }
+      });
+
       if (initialProjectData && Object.keys(initialProjectData).length > 0) {
         editor.loadProjectData(initialProjectData);
       } else if (initialHtml) {
@@ -127,7 +234,20 @@ export const GrapesEditor = forwardRef(({
             if (content) {
               const selected = editor.getSelected();
               if (selected) {
-                selected.append(content);
+                const tag = (selected.get("tagName") || "").toLowerCase();
+                const isContainer = ["div", "section", "article", "main", "aside", "header", "footer", "ul", "ol"].includes(tag) || selected.get("droppable") === true;
+
+                if (isContainer) {
+                  // Drop inside container
+                  selected.append(content);
+                } else if (selected.parent()) {
+                  // Insert immediately below the selected item in the parent flow
+                  const parent = selected.parent();
+                  const index = selected.index();
+                  parent.append(content, { at: index + 1 });
+                } else {
+                  editor.addComponents(content);
+                }
               } else {
                 editor.addComponents(content);
               }

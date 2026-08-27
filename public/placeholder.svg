@@ -1,0 +1,6 @@
+<svg width="800" height="450" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="#f1f5f9">
+  <rect width="800" height="450" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2" rx="16"/>
+  <path d="M340 220l40 50 30-30 70 80H320z" fill="#cbd5e1"/>
+  <circle cx="360" cy="180" r="18" fill="#cbd5e1"/>
+  <text x="400" y="350" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#64748b" text-anchor="middle">Select Image from Media Library</text>
+</svg>

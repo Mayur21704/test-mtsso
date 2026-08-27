@@ -13,6 +13,7 @@ export const registerCustomBlocks = (editor) => {
     model: {
       defaults: {
         tagName: "div",
+        droppable: false,
         attributes: { "data-mtsso-type": "video-embed" },
         traits: [
           {
@@ -27,15 +28,15 @@ export const registerCustomBlocks = (editor) => {
             name: "ratio",
             label: "Aspect Ratio",
             options: [
-              { id: "56.25%", name: "16:9 (Standard Widescreen)" },
-              { id: "75%", name: "4:3 (Classic)" },
-              { id: "100%", name: "1:1 (Square)" },
+              { id: "16-9", name: "16:9 (Standard Widescreen)" },
+              { id: "4-3", name: "4:3 (Classic)" },
+              { id: "1-1", name: "1:1 (Square)" },
             ],
             changeProp: 1,
           },
         ],
         video_url: "",
-        ratio: "56.25%",
+        ratio: "16-9",
       },
       init() {
         // When loaded from saved HTML, extract existing iframe or video src so traits are preserved!
@@ -62,7 +63,16 @@ export const registerCustomBlocks = (editor) => {
       },
       updateVideo() {
         let url = this.get("video_url") || "";
-        const ratio = this.get("ratio") || "56.25%";
+        const ratioRaw = this.get("ratio") || "16-9";
+        const ratioMap = {
+          "16-9": "56.25%",
+          "4-3": "75%",
+          "1-1": "100%",
+          "56.25%": "56.25%",
+          "75%": "75%",
+          "100%": "100%",
+        };
+        const ratio = ratioMap[ratioRaw] || "56.25%";
 
         if (!url) {
           this.components(`
@@ -112,6 +122,7 @@ export const registerCustomBlocks = (editor) => {
     model: {
       defaults: {
         tagName: "div",
+        droppable: false,
         attributes: { "data-mtsso-type": "pdf-embed" },
         traits: [
           {
@@ -568,6 +579,8 @@ export const registerCustomBlocks = (editor) => {
   // ═══════════════════════════════════════════════════════════
   // ─── 2. MEDIA & DOCUMENTS ───
   // ═══════════════════════════════════════════════════════════
+  const cleanImagePlaceholder = "/placeholder.svg";
+
   bm.add("elem-photo", {
     label: createBlockCard(
       `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
@@ -579,8 +592,8 @@ export const registerCustomBlocks = (editor) => {
     content: {
       type: "image",
       style: { width: "100%", "border-radius": "14px", margin: "20px 0", display: "block" },
-      src: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1000&q=80",
-      alt: "Port vessel activity",
+      src: cleanImagePlaceholder,
+      alt: "Photo placeholder",
     },
   });
 
@@ -595,10 +608,10 @@ export const registerCustomBlocks = (editor) => {
     content: `
       <div style="display: flex; flex-wrap: wrap; gap: 16px; margin: 28px 0;">
         <div style="flex: 1 1 280px;">
-          <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80" alt="Ship Visit" style="width: 100%; height: 220px; object-fit: cover; border-radius: 12px; display: block;" />
+          <img src="${cleanImagePlaceholder}" alt="Photo 1" style="width: 100%; height: 220px; object-fit: cover; border-radius: 12px; display: block;" />
         </div>
         <div style="flex: 1 1 280px;">
-          <img src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80" alt="Port Station" style="width: 100%; height: 220px; object-fit: cover; border-radius: 12px; display: block;" />
+          <img src="${cleanImagePlaceholder}" alt="Photo 2" style="width: 100%; height: 220px; object-fit: cover; border-radius: 12px; display: block;" />
         </div>
       </div>
     `,
@@ -615,7 +628,7 @@ export const registerCustomBlocks = (editor) => {
     content: `
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin: 32px 0;">
         <div style="flex: 1 1 300px;">
-          <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80" alt="Port Vessel" style="width: 100%; border-radius: 14px; display: block;" />
+          <img src="${cleanImagePlaceholder}" alt="Feature Photo" style="width: 100%; border-radius: 14px; display: block;" />
         </div>
         <div style="flex: 1 1 300px;">
           <span style="color: #e05a2b; font-size: 11px; font-weight: 800; text-transform: uppercase;">On-Board Ministry</span>

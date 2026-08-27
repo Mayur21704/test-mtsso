@@ -55,23 +55,7 @@ export const getGrapesConfig = (containerId = "gjs-canvas-target", options = {})
     },
 
     canvas: {
-      styles: [
-        `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
-        * { box-sizing: border-box; }
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          margin: 0;
-          padding: 24px;
-          color: #1e2456;
-          background-color: #ffffff;
-          line-height: 1.7;
-        }
-        a { color: #e05a2b; text-decoration: none; font-weight: 700; }
-        img { max-width: 100%; height: auto; display: block; border-radius: 12px; }
-        h1, h2, h3, h4 { color: #1e2456; font-weight: 800; }
-        `,
-      ],
+      styles: [],
     },
 
     blockManager: {
