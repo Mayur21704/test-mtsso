@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Save, Send, Settings, Anchor,
-  Monitor, Tablet, Smartphone, RotateCcw, RotateCw,
+  Monitor, Tablet, Smartphone,
   Image as ImageIcon, Eye, LogOut, UserCheck
 } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
@@ -14,8 +14,6 @@ export const CmsNavbar = ({
   onOpenSettings,
   onOpenPreview,
   onOpenAssets,
-  onUndo,
-  onRedo,
   onSaveDraft,
   onPublish,
   isSaving,
@@ -115,25 +113,6 @@ export const CmsNavbar = ({
 
       {/* ─── RIGHT: ACTIONS, PREVIEW & PUBLISH ─── */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Undo / Redo */}
-        <div className="hidden sm:flex items-center bg-slate-900 rounded-lg border border-slate-800 p-0.5">
-          <button
-            type="button"
-            onClick={onUndo}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
-            title="Undo (Ctrl+Z)"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={onRedo}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
-            title="Redo (Ctrl+Y)"
-          >
-            <RotateCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
         {/* Media Library */}
         <button

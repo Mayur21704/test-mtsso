@@ -66,6 +66,26 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleToggleStatus = async (story) => {
+    const nextStatus = story.status === "published" ? "draft" : "published";
+    try {
+      await storyService.updateStory(story.id, {
+        status: nextStatus,
+        hasDraftChanges: false,
+      });
+      showToast(
+        "success",
+        nextStatus === "published" ? "Story Published" : "Moved to Draft",
+        `"${story.title}" is now ${nextStatus}.`
+      );
+      setStories((prev) =>
+        prev.map((s) => (s.id === story.id ? { ...s, status: nextStatus } : s))
+      );
+    } catch (err) {
+      showToast("error", "Status Update Failed", err.message || "Could not update status.");
+    }
+  };
+
   const stationBadges = {
     toronto: { name: "Toronto", bg: "bg-blue-50 text-blue-800 border-blue-200" },
     hamilton: { name: "Hamilton", bg: "bg-amber-50 text-amber-800 border-amber-200" },
@@ -252,15 +272,23 @@ export const AdminDashboard = () => {
                           </td>
 
                           <td className="py-4 px-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(story)}
+                              title="Click to toggle between Published and Draft"
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase transition-all hover:scale-105 cursor-pointer shadow-2xs ${
                                 story.status === "published"
-                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                  : "bg-amber-50 text-amber-800 border border-amber-200"
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 ring-1 ring-emerald-400/20"
+                                  : "bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 ring-1 ring-amber-400/20"
                               }`}
                             >
-                              {story.status === "published" ? "🟢 Published" : "📝 Draft"}
-                            </span>
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  story.status === "published" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                                }`}
+                              />
+                              {story.status === "published" ? "Published" : "Draft"}
+                            </button>
                           </td>
 
                           <td className="py-4 px-4 whitespace-nowrap text-slate-500 text-[11px]">

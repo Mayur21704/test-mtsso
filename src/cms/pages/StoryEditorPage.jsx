@@ -100,7 +100,14 @@ export const StoryEditorPage = () => {
       };
 
       if (id) {
-        await storyService.updateStory(id, payload);
+        const updated = await storyService.updateStory(id, payload);
+        setStory((prev) => ({
+          ...prev,
+          ...payload,
+          ...(updated || {}),
+          status: targetStatus,
+          hasDraftChanges: targetStatus === "draft",
+        }));
         showToast(
           "success",
           targetStatus === "published" ? "Story Published!" : "Draft Saved",
@@ -110,6 +117,13 @@ export const StoryEditorPage = () => {
         );
       } else {
         const newStory = await storyService.createStory(payload);
+        setStory((prev) => ({
+          ...prev,
+          ...payload,
+          ...(newStory || {}),
+          status: targetStatus,
+          hasDraftChanges: targetStatus === "draft",
+        }));
         showToast(
           "success",
           targetStatus === "published" ? "Story Created & Published!" : "Draft Created",
@@ -158,8 +172,6 @@ export const StoryEditorPage = () => {
           setAssetTargetProps(null);
           setMediaLibraryOpen(true);
         }}
-        onUndo={() => editorRef.current?.undo()}
-        onRedo={() => editorRef.current?.redo()}
         onSaveDraft={() => handleSave("draft")}
         onPublish={() => handleSave("published")}
         isSaving={isSaving}

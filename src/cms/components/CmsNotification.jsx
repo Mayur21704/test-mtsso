@@ -48,8 +48,8 @@ export const CmsNotification = ({
   const Icon = current.icon;
 
   return (
-    <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-top-3 duration-250 select-none">
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xl px-4 py-3 max-w-sm flex items-start gap-3 border-l-4 shadow-slate-900/10">
+    <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-250 select-none">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-2xl px-4 py-3.5 max-w-sm flex items-start gap-3 border-l-4 shadow-slate-900/15">
         <div className={`w-8 h-8 rounded-lg ${current.iconBg} border flex items-center justify-center shrink-0 mt-0.5`}>
           <Icon className={`w-4 h-4 ${current.iconColor}`} />
         </div>
