@@ -18,7 +18,15 @@ export const AdminLoginPage = () => {
   // Check URL query for expired flag
   const query = new URLSearchParams(location.search);
   const isExpired = query.get("expired") === "1" || sessionExpired;
-  const redirectPath = query.get("redirect") ? decodeURIComponent(query.get("redirect")) : "/admin/stories";
+  let redirectPath = "/admin/stories";
+  try {
+    const rawRedirect = query.get("redirect");
+    if (rawRedirect) {
+      redirectPath = decodeURIComponent(rawRedirect);
+    }
+  } catch (e) {
+    redirectPath = "/admin/stories";
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
